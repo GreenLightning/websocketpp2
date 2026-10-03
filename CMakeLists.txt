@@ -48,14 +48,6 @@ else ()
 endif ()
 set (INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
-# Make relative paths absolute (needed later on)
-foreach (p INCLUDE CMAKE)
-  set (var INSTALL_${p}_DIR)
-  if (NOT IS_ABSOLUTE "${${var}}")
-    set (${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-  endif ()
-endforeach ()
-
 # Set CMake library search policy
 if (COMMAND cmake_policy)
     cmake_policy (SET CMP0003 NEW)
