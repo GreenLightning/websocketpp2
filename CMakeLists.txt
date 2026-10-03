@@ -106,9 +106,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
         endif()
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        if (NOT APPLE)
-            add_definitions (-DNDEBUG -Wall -Wcast-align) # todo: should we use CMAKE_C_FLAGS for these?
-        endif ()
+        add_compile_options (-Wall -Wcast-align)
     endif ()
 
     # clang
@@ -121,14 +119,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
             set (WEBSOCKETPP_PLATFORM_LIBS pthread rt)
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        if (NOT APPLE)
-            add_definitions (-DNDEBUG -Wall -Wno-padded) # todo: should we use CMAKE_C_FLAGS for these?
-        endif ()
-    endif ()
-
-    # OSX, can override above.
-    if (APPLE)
-        add_definitions (-DNDEBUG -Wall)
+        add_compile_options (-Wall -Wno-padded)
     endif ()
 
     if (BUILD_TESTS)
