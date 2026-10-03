@@ -27,15 +27,7 @@ set (WEBSOCKETPP_MINOR_VERSION 0)
 set (WEBSOCKETPP_PATCH_VERSION 0)
 set (WEBSOCKETPP_VERSION ${WEBSOCKETPP_MAJOR_VERSION}.${WEBSOCKETPP_MINOR_VERSION}.${WEBSOCKETPP_PATCH_VERSION})
 
-if(POLICY CMP0048)
-  cmake_policy(GET CMP0048 _version_policy)
-endif()
-
-if(_version_allowed STREQUAL NEW)
-  project (websocketpp VERSION ${WEBSOCKETPP_VERSION})
-else()
-  project (websocketpp)
-endif()
+project (websocketpp VERSION ${WEBSOCKETPP_VERSION})
 
 # Require at least C++11, while respecting a newer standard selected by users.
 if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 11 OR CMAKE_CXX_STANDARD EQUAL 98)
