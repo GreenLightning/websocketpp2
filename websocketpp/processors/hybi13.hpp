@@ -74,6 +74,7 @@ public:
       , m_msg_manager(manager)
       , m_rng(rng)
     {
+        m_permessage_deflate.set_max_message_size(base::m_max_message_size);
         reset_headers();
     }
 
@@ -529,6 +530,9 @@ public:
             lib::error_code ec;
             ec = m_permessage_deflate.decompress(trailer,4,out);
             if (ec) {
+                if (permessage_deflate_type::is_message_too_big(ec)) {
+                    return make_error_code(error::message_too_big);
+                }
                 return ec;
             }
         }
@@ -555,8 +559,22 @@ public:
         std::fill_n(
             m_extended_header.bytes,
             frame::MAX_EXTENDED_HEADER_LENGTH,
-            0x00
+            static_cast<uint8_t>(0x00)
         );
+    }
+
+    /// Propagate maximum message size changes to the permessage-deflate extension
+    /**
+     * Overrides the base hook so that calls to `set_max_message_size` on
+     * the processor reach the permessage-deflate extension, which uses
+     * the limit to bound decompressed message size.
+     *
+     * @since 0.8.3
+     *
+     * @param new_value The new maximum message size, in bytes
+     */
+    void handle_max_message_size_changed(size_t new_value) {
+        m_permessage_deflate.set_max_message_size(new_value);
     }
 
     /// Test whether or not the processor has a message ready
@@ -815,6 +833,12 @@ protected:
             // Decompress current buffer into the message buffer
             ec = m_permessage_deflate.decompress(buf,len,out);
             if (ec) {
+                // translate extension error type to general library error type
+                // in this case because there is a dedicated protocol level
+                // close code for message too big
+                if (permessage_deflate_type::is_message_too_big(ec)) {
+                    ec = make_error_code(error::message_too_big);
+                }
                 return 0;
             }
         } else {

@@ -100,6 +100,16 @@ public:
         return "";
     }
 
+    /// Set maximum decompressed message size (no-op)
+    /**
+     * Provided for API parity with the enabled extension. The disabled
+     * extension never decompresses, so there is no limit to enforce and
+     * the value is silently ignored.
+     *
+     * @since 0.8.3
+     */
+    void set_max_message_size(size_t) {}
+
     /// Compress bytes
     /**
      * @param [in] in String to compress
@@ -119,6 +129,10 @@ public:
      */
     lib::error_code decompress(uint8_t const *, size_t, std::string &) {
         return make_error_code(error::disabled);
+    }
+
+    static bool is_message_too_big(lib::error_code const &) {
+        return false;
     }
 };
 

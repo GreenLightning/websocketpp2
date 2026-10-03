@@ -257,6 +257,16 @@ struct core_client {
     struct permessage_deflate_config {
         typedef core_client::request_type request_type;
 
+        /// Maximum size (in bytes) of a decompressed message
+        /**
+         * If this constant is not defined,
+         * websocketpp::extensions::permessage_deflate::default_max_message_size
+         * is used. Uncomment and adjust to enforce a different per-message
+         * decompression limit.
+         */
+        //static const size_t max_message_size =
+        //    websocketpp::extensions::permessage_deflate::default_max_message_size;
+
         /// If the remote endpoint requests that we reset the compression
         /// context after each message should we honor the request?
         static const bool allow_disabling_context_takeover = true;

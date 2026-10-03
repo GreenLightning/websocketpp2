@@ -202,6 +202,7 @@ public:
      */
     void set_max_message_size(size_t new_value) {
         m_max_message_size = new_value;
+        this->handle_max_message_size_changed(new_value);
     }
 
     /// Returns whether or not the permessage_compress extension is implemented
@@ -396,6 +397,22 @@ public:
     virtual lib::error_code prepare_close(close::status::value code,
         std::string const & reason, message_ptr out) const = 0;
 protected:
+    /// Hook invoked when the maximum message size changes
+    /**
+     * Called from `set_max_message_size` after `m_max_message_size` has
+     * been updated. Subclasses override this to propagate the new value
+     * to any sub-components that maintain their own copy of the limit
+     * (for example, an enabled permessage-deflate extension).
+     *
+     * The default implementation is a no-op for processors that do not
+     * own such sub-components.
+     *
+     * @since 0.8.3
+     *
+     * @param new_value The new maximum message size, in bytes
+     */
+    virtual void handle_max_message_size_changed(size_t) {}
+
     bool const m_secure;
     bool const m_server;
     size_t m_max_message_size;
