@@ -2,7 +2,7 @@
 file (GLOB SOURCE extension.cpp)
 
 init_target (test_extension)
-build_executable (${TARGET_NAME} ${SOURCE})
+build_test (${TARGET_NAME} ${SOURCE})
 link_boost ()
 final_target ()
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "test")

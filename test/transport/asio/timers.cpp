@@ -158,7 +158,7 @@ struct mock_endpoint : public websocketpp::transport::asio::endpoint<config> {
 };
 
 BOOST_AUTO_TEST_CASE( tls_handshake_timeout ) {
-    websocketpp::lib::thread dummy_server(websocketpp::lib::bind(&run_dummy_server,9005));
+    websocketpp::lib::thread dummy_server(websocketpp::lib::bind(&run_dummy_server,9006));
     websocketpp::lib::thread timer(websocketpp::lib::bind(&run_test_timer,5000));
     dummy_server.detach();
     timer.detach();
@@ -167,6 +167,6 @@ BOOST_AUTO_TEST_CASE( tls_handshake_timeout ) {
 
     mock_endpoint endpoint;
     endpoint.set_tls_init_handler(&on_tls_init);
-    endpoint.connect("wss://localhost:9005");
+    endpoint.connect("wss://localhost:9006");
     endpoint.run();
 }
