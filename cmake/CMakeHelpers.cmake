@@ -87,17 +87,17 @@ endmacro ()
 
 macro (link_boost)
     target_link_libraries (${TARGET_NAME} ${Boost_LIBRARIES})
-    set_property(TARGET ${TARGET_NAME} APPEND PROPERTY INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+    target_include_directories (${TARGET_NAME} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 endmacro ()
 
 macro (link_openssl)
     target_link_libraries (${TARGET_NAME} ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
-    set_property(TARGET ${TARGET_NAME} APPEND PROPERTY INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
+    target_include_directories (${TARGET_NAME} SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 endmacro ()
 
 macro (link_zlib)
-	target_link_libraries (${TARGET_NAME} ${ZLIB_LIBRARIES})
-    set_property(TARGET ${TARGET_NAME} APPEND PROPERTY INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIR})
+    target_link_libraries (${TARGET_NAME} ${ZLIB_LIBRARIES})
+    target_include_directories (${TARGET_NAME} SYSTEM PRIVATE ${ZLIB_INCLUDE_DIRS})
 endmacro ()
 
 macro (include_subdirs PARENT)

@@ -106,7 +106,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
         endif()
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        add_compile_options (-Wall -Wcast-align)
+        add_compile_options (-Wall -Wcast-align -Wshadow -Wunused-parameter)
     endif ()
 
     # clang
@@ -119,7 +119,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
             set (WEBSOCKETPP_PLATFORM_LIBS pthread rt)
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        add_compile_options (-Wall -Wno-padded)
+        add_compile_options (-Wall -Wno-padded -Wshadow -Wunused-parameter -Wsometimes-uninitialized -Wuninitialized)
     endif ()
 
     if (BUILD_TESTS)
@@ -178,7 +178,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
 
     if (Boost_FOUND)
         # Boost is a project wide global dependency.
-        include_directories (${Boost_INCLUDE_DIRS})
+        include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
         link_directories (${Boost_LIBRARY_DIRS})
 
         # Pretty print status
