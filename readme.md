@@ -1,5 +1,10 @@
-WebSocket++ (0.8.x-dev)
-==========================
+WebSocket++ 2.0
+===============
+
+_Fork and continuation of the original (now mostly inactive)
+[websocketpp](https://github.com/zaphoyd/websocketpp) project. The goal of
+this fork is to modernize and evolve the library while providing a
+straightforward upgrade path for existing users. We are AI-positive._
 
 WebSocket++ is a header only C++ library that implements RFC6455 The WebSocket
 Protocol. It allows integrating WebSocket client and server functionality into
@@ -10,6 +15,7 @@ policies to support other networking or event libraries as needed.
 
 Major Features
 ==============
+
 * Full support for RFC6455
 * Partial support for Hixie 76 / Hybi 00, 07-17 draft specs (server only)
 * Message/event based interface
@@ -19,35 +25,12 @@ Major Features
 * Portable/cross platform (Posix/Windows, 32/64bit, Intel/ARM/PPC)
 * Thread-safe
 
-Get Involved
-============
-
-[![Build Status](https://travis-ci.org/zaphoyd/websocketpp.png)](https://travis-ci.org/zaphoyd/websocketpp)
-
-**Project Website**
-http://www.zaphoyd.com/websocketpp/
-
-**User Manual**
-http://docs.websocketpp.org/
-
-**GitHub Repository**
-https://github.com/zaphoyd/websocketpp/
-
-GitHub pull requests should be submitted to the `develop` branch.
-
-**Announcements Mailing List**
-http://groups.google.com/group/websocketpp-announcements/
-
-**IRC Channel**
- #websocketpp (freenode)
-
-**Discussion / Development / Support Mailing List / Forum**
-http://groups.google.com/group/websocketpp/
-
 License
-======
+=======
+
 3-Clause BSD (See COPYING for more details)
 
 Author
 ======
+
 Peter Thorson - websocketpp@zaphoyd.com

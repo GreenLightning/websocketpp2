@@ -29,10 +29,12 @@ Complete & Tested:
 - tcp_init_handler
 
 Ongoing work
+- Build system update (CMake 3 and 4)
+- Dependency updates
+	- C++ standard
+	- Asio
 - Performance tuning
-- PowerPC support
 - Visual Studio / Windows support
-- CMake build/install support
 - http_handler
 
 Future feature roadmap
