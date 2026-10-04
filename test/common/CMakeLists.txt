@@ -15,3 +15,5 @@ foreach(backend boost standalone)
         target_compile_definitions(test_common_${backend} PRIVATE ASIO_STANDALONE)
     endif()
 endforeach()
+
+websocketpp_add_test(test_common_network network.cpp)
