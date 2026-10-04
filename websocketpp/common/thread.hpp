@@ -7,15 +7,9 @@
 
 #include <websocketpp/common/cpp11.hpp>
 
-#if defined(_WEBSOCKETPP_MINGW_THREAD_)
-    #include <mingw-threads/mingw.thread.h>
-    #include <mingw-threads/mingw.mutex.h>
-    #include <mingw-threads/mingw.condition_variable.h>
-#else
-    #include <thread>
-    #include <mutex>
-    #include <condition_variable>
-#endif
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace websocketpp {
 namespace lib {

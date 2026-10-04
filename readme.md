@@ -29,6 +29,9 @@ Requirements and upgrading
 
 WebSocket++ requires a C++11 compiler and standard library or later. C++98/03
 and Boost replacements for standard-library types are no longer supported.
+Standard-library `<thread>`, `<mutex>`, and `<condition_variable>` support is
+required on all platforms, including MinGW. The `mingw-std-threads` fallback
+and its `_WEBSOCKETPP_MINGW_THREAD_` switch have been removed.
 The `websocketpp::lib` aliases remain available for source compatibility:
 `shared_ptr`, `weak_ptr`, `unique_ptr`, `enable_shared_from_this`, `function`,
 `bind`, threading types, `chrono`, random-number types, regular expressions,

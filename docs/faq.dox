@@ -90,7 +90,7 @@ The `<websocketpp/config/asio.hpp>` and `<websocketpp/config/asio_client.hpp>` h
 Mac OS X ships a severely outdated version of the OpenSSL library. To securely use TLS with WebSocket++ on OS X you will need to install a modern version of OpenSSL via homebrew or compiling from source.
 
 ### Can WebSocket++ be used with MinGW
-Yes, with a C++11 standard library that provides `<thread>` and `<mutex>`. If your MinGW distribution lacks these headers, `mingw-std-threads` (https://github.com/meganz/mingw-std-threads) remains available by defining `_WEBSOCKETPP_MINGW_THREAD_` and making its headers available. Boost.Thread is no longer supported as a substitute.
+Yes, with a C++11 standard library that provides `<thread>`, `<mutex>`, and `<condition_variable>`. These facilities are required on all platforms. The `mingw-std-threads` fallback and `_WEBSOCKETPP_MINGW_THREAD_` switch have been removed; Boost.Thread is also no longer supported as a substitute.
 
 ## Compression
 
