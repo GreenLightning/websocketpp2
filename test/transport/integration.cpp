@@ -6,7 +6,13 @@
 #define BOOST_TEST_MODULE transport_integration
 #include <boost/test/unit_test.hpp>
 
+#include <array>
+#include <iterator>
+#include <boost/asio.hpp>
+
 #include <websocketpp/common/thread.hpp>
+#include <websocketpp/base64/base64.hpp>
+#include <websocketpp/sha1/sha1.hpp>
 
 #include <websocketpp/config/core.hpp>
 #include <websocketpp/config/core_client.hpp>
@@ -430,12 +436,108 @@ BOOST_AUTO_TEST_CASE( client_self_initiated_close_handshake_timeout ) {
 }
 
 BOOST_AUTO_TEST_CASE( client_peer_initiated_close_handshake_timeout ) {
-    // on open server sends close
-    // client should ack normally and then wait
-    // server leaves TCP connection open
-    // client handshake timer should be triggered
+    using boost::asio::ip::tcp;
+    client c;
+    c.clear_access_channels(websocketpp::log::alevel::all);
+    c.clear_error_channels(websocketpp::log::elevel::all);
+    c.init_asio();
 
-    // TODO: how to make a mock server that leaves the TCP connection open?
+    // Share the client's event loop so the peer needs no threads or sleeps.
+    boost::asio::io_context & io = c.get_io_context();
+    tcp::acceptor acceptor(io, tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0));
+    tcp::socket peer(io);
+    boost::asio::streambuf request_buffer;
+    std::string response;
+    std::array<unsigned char, 8> acknowledgement;
+    char trailing_byte;
+    bool acknowledged = false;
+    bool peer_eof = false;
+    bool timed_out = false;
+    int opens = 0;
+    int closes = 0;
+    int failures = 0;
+
+    boost::asio::steady_timer deadline(io, std::chrono::seconds(5));
+    deadline.async_wait([&](boost::system::error_code const & ec) {
+        if (ec == boost::asio::error::operation_aborted) return;
+        BOOST_CHECK(!ec);
+        timed_out = true;
+        c.stop();
+    });
+
+    c.set_open_handler([&](websocketpp::connection_hdl) { ++opens; });
+    c.set_fail_handler([&](websocketpp::connection_hdl) { ++failures; c.stop(); });
+    c.set_close_handler([&](websocketpp::connection_hdl hdl) {
+        ++closes;
+        client::connection_ptr con = c.get_con_from_hdl(hdl);
+        BOOST_CHECK_EQUAL(con->get_ec(),
+            websocketpp::error::make_error_code(websocketpp::error::close_handshake_timeout));
+        BOOST_CHECK_EQUAL(con->get_remote_close_code(), websocketpp::close::status::normal);
+        BOOST_CHECK(con->get_state() == websocketpp::session::state::closed);
+        BOOST_CHECK(acknowledged);
+        if (peer_eof) deadline.cancel();
+    });
+
+    acceptor.async_accept(peer, [&](boost::system::error_code const & ec) {
+        BOOST_REQUIRE(!ec);
+        boost::asio::async_read_until(peer, request_buffer, "\r\n\r\n",
+            [&](boost::system::error_code const & read_ec, size_t) {
+                BOOST_REQUIRE(!read_ec);
+                std::istream input(&request_buffer);
+                std::string request_text((std::istreambuf_iterator<char>(input)),
+                    std::istreambuf_iterator<char>());
+                websocketpp::http::parser::request request;
+                websocketpp::lib::error_code parse_ec;
+                request.consume(request_text.data(), request_text.size(), parse_ec);
+                BOOST_REQUIRE(!parse_ec);
+                BOOST_REQUIRE(request.ready());
+                std::string key = request.get_header("Sec-WebSocket-Key");
+                BOOST_REQUIRE(!key.empty());
+                key += websocketpp::processor::constants::handshake_guid;
+                websocketpp::sha1::digest digest = websocketpp::sha1::calc(key.data(), key.size());
+                response = "HTTP/1.1 101 Switching Protocols\r\n"
+                    "Upgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: "
+                    + websocketpp::base64::encode(digest.data(), digest.size()) + "\r\n\r\n";
+                // Immediately initiate a normal close (1000), then keep TCP open.
+                response.append("\x88\x02\x03\xe8", 4);
+                boost::asio::async_write(peer, boost::asio::buffer(response),
+                    [&](boost::system::error_code const & write_ec, size_t) {
+                        BOOST_REQUIRE(!write_ec);
+                        boost::asio::async_read(peer, boost::asio::buffer(acknowledgement),
+                            [&](boost::system::error_code const & ack_ec, size_t bytes) {
+                                BOOST_REQUIRE(!ack_ec);
+                                BOOST_REQUIRE_EQUAL(bytes, acknowledgement.size());
+                                BOOST_CHECK_EQUAL(acknowledgement[0], 0x88);
+                                BOOST_CHECK_EQUAL(acknowledgement[1], 0x82);
+                                BOOST_CHECK_EQUAL(acknowledgement[6] ^ acknowledgement[2], 0x03);
+                                BOOST_CHECK_EQUAL(acknowledgement[7] ^ acknowledgement[3], 0xe8);
+                                acknowledged = true;
+                                // The peer never shuts down TCP: the client must
+                                // time out and close it after acknowledging.
+                                boost::asio::async_read(peer, boost::asio::buffer(&trailing_byte, 1),
+                                    [&](boost::system::error_code const & eof_ec, size_t extra_bytes) {
+                                        BOOST_CHECK_EQUAL(eof_ec, boost::asio::error::eof);
+                                        BOOST_CHECK_EQUAL(extra_bytes, 0u);
+                                        peer_eof = true;
+                                        if (closes) deadline.cancel();
+                                    });
+                            });
+                    });
+            });
+    });
+
+    websocketpp::lib::error_code ec;
+    client::connection_ptr con = c.get_connection("ws://127.0.0.1:"
+        + std::to_string(acceptor.local_endpoint().port()), ec);
+    BOOST_REQUIRE(!ec);
+    c.connect(con);
+    c.run();
+    BOOST_CHECK(!timed_out);
+    BOOST_CHECK_EQUAL(opens, 1);
+    BOOST_CHECK_EQUAL(closes, 1);
+    BOOST_CHECK_EQUAL(failures, 0);
+    BOOST_CHECK(acknowledged);
+    BOOST_CHECK(peer_eof);
 }
 
 BOOST_AUTO_TEST_CASE( server_self_initiated_close_handshake_timeout ) {
