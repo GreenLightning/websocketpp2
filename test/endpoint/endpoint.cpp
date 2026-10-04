@@ -31,8 +31,55 @@ BOOST_AUTO_TEST_CASE( initialize_server_asio ) {
 
 BOOST_AUTO_TEST_CASE( initialize_server_asio_external ) {
     websocketpp::server<websocketpp::config::asio> s;
-    boost::asio::io_service ios;
+    boost::asio::io_context ios;
     s.init_asio(&ios);
+    BOOST_CHECK_EQUAL(&s.get_io_context(), &ios);
+    BOOST_CHECK_EQUAL(&s.get_io_service(), &ios);
+}
+
+BOOST_AUTO_TEST_CASE( restart_server_asio ) {
+    websocketpp::server<websocketpp::config::asio> s;
+    s.init_asio();
+    BOOST_CHECK_EQUAL(s.run(), 0);
+    BOOST_CHECK(s.stopped());
+
+    int calls = 0;
+    s.restart();
+    s.set_timer(0, [&calls](websocketpp::lib::error_code const & ec) {
+        BOOST_CHECK(!ec);
+        ++calls;
+    });
+    s.run();
+    BOOST_CHECK_EQUAL(calls, 1);
+
+    s.reset();
+    s.set_timer(0, [&calls](websocketpp::lib::error_code const & ec) {
+        BOOST_CHECK(!ec);
+        ++calls;
+    });
+    s.run();
+    BOOST_CHECK_EQUAL(calls, 2);
+}
+
+BOOST_AUTO_TEST_CASE( perpetual_server_asio ) {
+    websocketpp::server<websocketpp::config::asio> s;
+    s.init_asio();
+    s.start_perpetual();
+    BOOST_CHECK_EQUAL(s.poll(), 0);
+    BOOST_CHECK(!s.stopped());
+
+    s.stop_perpetual();
+    BOOST_CHECK_EQUAL(s.run(), 0);
+    BOOST_CHECK(s.stopped());
+}
+
+BOOST_AUTO_TEST_CASE( listen_invalid_host_service ) {
+    websocketpp::server<websocketpp::config::asio> s;
+    s.init_asio();
+    websocketpp::lib::error_code ec;
+    s.listen("127.0.0.1", "websocketpp-invalid-service", ec);
+    BOOST_CHECK(ec == websocketpp::transport::asio::error::invalid_host_service);
+    BOOST_CHECK(!s.is_listening());
 }
 
 #ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
@@ -119,8 +166,8 @@ BOOST_AUTO_TEST_CASE( listen_after_listen_failure ) {
     server1.init_asio();
     server2.init_asio();
 
-    boost::asio::ip::tcp::endpoint ep1(boost::asio::ip::address::from_string("127.0.0.1"), 12345);
-    boost::asio::ip::tcp::endpoint ep2(boost::asio::ip::address::from_string("127.0.0.1"), 23456);
+    boost::asio::ip::tcp::endpoint ep1(boost::asio::ip::make_address("127.0.0.1"), 12345);
+    boost::asio::ip::tcp::endpoint ep2(boost::asio::ip::make_address("127.0.0.1"), 23456);
 
     server1.listen(ep1, ec);
     BOOST_CHECK(!ec);

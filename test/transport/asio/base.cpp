@@ -25,3 +25,32 @@ BOOST_AUTO_TEST_CASE( asio_error ) {
     BOOST_CHECK( ec == general );
     BOOST_CHECK( ec.value() == 1 );
 }
+
+BOOST_AUTO_TEST_CASE( executor_bound_handler_allocator ) {
+    namespace asio = websocketpp::lib::asio;
+    websocketpp::transport::asio::handler_allocator allocator;
+    void * storage = allocator.allocate(1);
+    allocator.deallocate(storage);
+
+    asio::io_context context;
+    asio::strand<asio::io_context::executor_type> strand(context.get_executor());
+    asio::steady_timer timer(context, std::chrono::milliseconds(0));
+    int calls = 0;
+    timer.async_wait(asio::bind_executor(strand,
+        websocketpp::transport::asio::make_custom_alloc_handler(allocator,
+            [&calls](websocketpp::lib::error_code const & ec) {
+                BOOST_CHECK(!ec);
+                ++calls;
+            })));
+
+    // Asio must reserve the handler's storage until the operation completes.
+    void * busy = allocator.allocate(1);
+    BOOST_CHECK(busy != storage);
+    allocator.deallocate(busy);
+    context.run();
+    BOOST_CHECK_EQUAL(calls, 1);
+
+    void * recycled = allocator.allocate(1);
+    BOOST_CHECK(recycled == storage);
+    allocator.deallocate(recycled);
+}

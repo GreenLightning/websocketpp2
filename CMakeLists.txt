@@ -60,11 +60,11 @@ if(BUILD_EXAMPLES OR BUILD_TESTS)
     if(BUILD_TESTS)
         list(APPEND boost_components unit_test_framework)
     endif()
-    find_package(Boost 1.49 REQUIRED COMPONENTS ${boost_components})
+    find_package(Boost 1.66 REQUIRED COMPONENTS ${boost_components})
     # Boost.System became header-only in Boost 1.69.
     if(Boost_VERSION_STRING VERSION_LESS "1.69.0")
         list(APPEND boost_components system)
-        find_package(Boost 1.49 REQUIRED COMPONENTS ${boost_components})
+        find_package(Boost 1.66 REQUIRED COMPONENTS ${boost_components})
     endif()
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)

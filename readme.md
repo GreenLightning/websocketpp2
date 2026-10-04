@@ -42,13 +42,20 @@ Error types follow the selected Asio backend, independently of the C++ standard:
 
 | Backend | Selection | Minimum version | `websocketpp::lib::error_code` |
 | --- | --- | --- | --- |
-| Standalone Asio | Define `ASIO_STANDALONE` | Asio 1.8.0 | `std::error_code` |
-| Boost.Asio | Leave `ASIO_STANDALONE` undefined | Boost 1.49.0 | `boost::system::error_code` |
+| Standalone Asio | Define `ASIO_STANDALONE` | Asio 1.12.0 | `std::error_code` |
+| Boost.Asio | Leave `ASIO_STANDALONE` undefined | Boost 1.66.0 | `boost::system::error_code` |
 
 The `error_category`, `error_condition`, `system_error`, and `errc` aliases use
 the same backend. Define `ASIO_STANDALONE` consistently across all translation
 units, before including any Asio or WebSocket++ headers. With this define, the
 iostream/raw transports require neither Boost nor Asio headers.
+
+The Asio transport uses `io_context`, executor work guards, and executor-bound
+strands. Use `get_io_context()` to access the event loop and `restart()` before
+running it again after it has stopped. The former `get_io_service()`,
+`io_service_ptr`, and `reset()` names remain as compatibility wrappers. Custom
+socket policies must use `asio::strand<asio::io_context::executor_type>` for
+their strand pointers.
 
 When upgrading:
 

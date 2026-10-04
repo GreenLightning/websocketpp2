@@ -10,13 +10,16 @@
 #include <websocketpp/common/system_error.hpp>
 #include <websocketpp/common/type_traits.hpp>
 
+#include <exception>
+#include <limits>
+#include <new>
 #include <string>
 
 namespace websocketpp {
 namespace transport {
 /// Transport policy that uses asio
 /**
- * This policy uses a single asio io_service to provide transport
+ * This policy uses a single asio io_context to provide transport
  * services to a WebSocket++ endpoint.
  */
 namespace asio {
@@ -61,12 +64,59 @@ private:
     bool m_in_use;
 };
 
+// Standard allocator interface used by Asio's associated_allocator trait.
+template <typename T>
+class handler_allocator_adapter {
+public:
+    typedef T value_type;
+
+    explicit handler_allocator_adapter(handler_allocator & allocator)
+      : m_allocator(&allocator)
+    {}
+
+    template <typename U>
+    handler_allocator_adapter(handler_allocator_adapter<U> const & other)
+      : m_allocator(other.m_allocator)
+    {}
+
+    T * allocate(std::size_t count) {
+        if (count > (std::numeric_limits<std::size_t>::max)() / sizeof(T)) {
+            #ifdef _WEBSOCKETPP_NO_EXCEPTIONS
+            std::terminate();
+            #else
+            throw std::bad_alloc();
+            #endif
+        }
+        return static_cast<T *>(m_allocator->allocate(count * sizeof(T)));
+    }
+
+    void deallocate(T * pointer, std::size_t) {
+        m_allocator->deallocate(pointer);
+    }
+
+    template <typename U>
+    bool operator==(handler_allocator_adapter<U> const & other) const {
+        return m_allocator == other.m_allocator;
+    }
+
+    template <typename U>
+    bool operator!=(handler_allocator_adapter<U> const & other) const {
+        return !(*this == other);
+    }
+
+private:
+    template <typename> friend class handler_allocator_adapter;
+    handler_allocator * m_allocator;
+};
+
 // Wrapper class template for handler objects to allow handler memory
 // allocation to be customised. Calls to operator() are forwarded to the
 // encapsulated handler.
 template <typename Handler>
 class custom_alloc_handler {
 public:
+    typedef handler_allocator_adapter<unsigned char> allocator_type;
+
     custom_alloc_handler(handler_allocator& a, Handler h)
       : allocator_(a),
         handler_(h)
@@ -82,16 +132,8 @@ public:
         handler_(arg1, arg2);
     }
 
-    friend void* asio_handler_allocate(std::size_t size,
-        custom_alloc_handler<Handler> * this_handler)
-    {
-        return this_handler->allocator_.allocate(size);
-    }
-
-    friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/,
-        custom_alloc_handler<Handler> * this_handler)
-    {
-        this_handler->allocator_.deallocate(pointer);
+    allocator_type get_allocator() const {
+        return allocator_type(allocator_);
     }
 
 private:

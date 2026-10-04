@@ -9,15 +9,15 @@
 
 #ifdef ASIO_STANDALONE
     #include <asio/version.hpp>
-    #if ASIO_VERSION < 100800
-        #error "The minimum version of standalone Asio is 1.8.0"
+    #if ASIO_VERSION < 101200
+        #error "The minimum version of standalone Asio is 1.12.0"
     #endif
     #include <asio.hpp>
     #include <asio/steady_timer.hpp>
 #else
     #include <boost/version.hpp>
-    #if BOOST_VERSION < 104900
-        #error "The minimum version of Boost is 1.49.0"
+    #if BOOST_VERSION < 106600
+        #error "The minimum version of Boost is 1.66.0"
     #endif
     #include <boost/asio.hpp>
     #include <boost/asio/steady_timer.hpp>
