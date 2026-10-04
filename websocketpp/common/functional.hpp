@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_FUNCTIONAL_HPP
-#define WEBSOCKETPP_COMMON_FUNCTIONAL_HPP
+#pragma once
 
 #include <websocketpp/common/cpp11.hpp>
 #include <functional>
@@ -26,5 +25,3 @@ void clear_function(T & x) {
 
 } // namespace lib
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_FUNCTIONAL_HPP

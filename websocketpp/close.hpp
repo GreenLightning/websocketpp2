@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CLOSE_HPP
-#define WEBSOCKETPP_CLOSE_HPP
+#pragma once
 
 /** \file
  * A package of types and methods for manipulating WebSocket close codes.
@@ -325,5 +324,3 @@ inline std::string extract_reason(std::string const & payload, lib::error_code
 
 } // namespace close
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CLOSE_HPP

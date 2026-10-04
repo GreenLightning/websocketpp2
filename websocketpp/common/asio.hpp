@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_ASIO_HPP
-#define WEBSOCKETPP_COMMON_ASIO_HPP
+#pragma once
 
 #include <websocketpp/common/chrono.hpp>
 #include <websocketpp/common/system_error.hpp>
@@ -49,5 +48,3 @@ namespace asio {
 } // namespace asio
 } // namespace lib
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_ASIO_HPP

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_TYPE_TRAITS_HPP
-#define WEBSOCKETPP_COMMON_TYPE_TRAITS_HPP
+#pragma once
 
 #include <websocketpp/common/cpp11.hpp>
 #include <type_traits>
@@ -16,5 +15,3 @@ using std::is_same;
 
 } // namespace lib
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_TYPE_TRAITS_HPP

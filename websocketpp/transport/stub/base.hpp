@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_TRANSPORT_STUB_BASE_HPP
-#define WEBSOCKETPP_TRANSPORT_STUB_BASE_HPP
+#pragma once
 
 #include <websocketpp/common/system_error.hpp>
 #include <websocketpp/common/cpp11.hpp>
@@ -68,5 +67,3 @@ template<> struct is_error_code_enum<websocketpp::transport::stub::error::value>
     static bool const value = true;
 };
 _WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
-
-#endif // WEBSOCKETPP_TRANSPORT_STUB_BASE_HPP

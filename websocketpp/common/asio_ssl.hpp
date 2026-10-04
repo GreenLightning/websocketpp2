@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_ASIO_SSL_HPP
-#define WEBSOCKETPP_COMMON_ASIO_SSL_HPP
+#pragma once
 
 // NOTE: This file must be included before common/asio.hpp
 
@@ -12,5 +11,3 @@
 #else
     #include <boost/asio/ssl.hpp>
 #endif
-
-#endif // WEBSOCKETPP_COMMON_ASIO_SSL_HPP

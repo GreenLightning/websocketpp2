@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_TRANSPORT_BASE_HPP
-#define WEBSOCKETPP_TRANSPORT_BASE_HPP
+#pragma once
 
 #include <websocketpp/common/functional.hpp>
 #include <websocketpp/common/system_error.hpp>
@@ -61,5 +60,3 @@ typedef lib::function<void(lib::error_code const &)> connect_handler;
 
 } // namespace transport
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_TRANSPORT_BASE_HPP

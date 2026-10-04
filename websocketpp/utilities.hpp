@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_UTILITIES_HPP
-#define WEBSOCKETPP_UTILITIES_HPP
+#pragma once
 
 #include <websocketpp/common/stdint.hpp>
 
@@ -146,5 +145,3 @@ std::string to_hex(char const * input, size_t length);
 } // namespace websocketpp
 
 #include <websocketpp/impl/utilities_impl.hpp>
-
-#endif // WEBSOCKETPP_UTILITIES_HPP

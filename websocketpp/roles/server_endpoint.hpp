@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_SERVER_ENDPOINT_HPP
-#define WEBSOCKETPP_SERVER_ENDPOINT_HPP
+#pragma once
 
 #include <websocketpp/endpoint.hpp>
 
@@ -318,5 +317,3 @@ public:
 };
 
 } // namespace websocketpp
-
-#endif //WEBSOCKETPP_SERVER_ENDPOINT_HPP

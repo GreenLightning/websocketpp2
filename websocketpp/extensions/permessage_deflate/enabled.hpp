@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_PROCESSOR_EXTENSION_PERMESSAGEDEFLATE_HPP
-#define WEBSOCKETPP_PROCESSOR_EXTENSION_PERMESSAGEDEFLATE_HPP
+#pragma once
 
 
 #include <websocketpp/common/cpp11.hpp>
@@ -865,5 +864,3 @@ private:
 } // namespace permessage_deflate
 } // namespace extensions
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_PROCESSOR_EXTENSION_PERMESSAGEDEFLATE_HPP

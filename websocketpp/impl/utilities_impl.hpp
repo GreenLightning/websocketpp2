@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_UTILITIES_IMPL_HPP
-#define WEBSOCKETPP_UTILITIES_IMPL_HPP
+#pragma once
 
 #include <algorithm>
 #include <string>
@@ -46,5 +45,3 @@ inline std::string string_replace_all(std::string subject, std::string const &
 
 } // namespace utility
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_UTILITIES_IMPL_HPP

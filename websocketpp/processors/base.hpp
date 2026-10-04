@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_PROCESSOR_BASE_HPP
-#define WEBSOCKETPP_PROCESSOR_BASE_HPP
+#pragma once
 
 #include <websocketpp/close.hpp>
 #include <websocketpp/utilities.hpp>
@@ -266,5 +265,3 @@ template<> struct is_error_code_enum<websocketpp::processor::error::processor_er
     static bool const value = true;
 };
 _WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
-
-#endif //WEBSOCKETPP_PROCESSOR_BASE_HPP

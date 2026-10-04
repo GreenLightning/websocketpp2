@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef HTTP_PARSER_REQUEST_HPP
-#define HTTP_PARSER_REQUEST_HPP
+#pragma once
 
 #include <string>
 
@@ -123,5 +122,3 @@ private:
 } // namespace websocketpp
 
 #include <websocketpp/http/impl/request.hpp>
-
-#endif // HTTP_PARSER_REQUEST_HPP

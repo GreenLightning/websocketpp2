@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_TRANSPORT_SECURITY_TLS_HPP
-#define WEBSOCKETPP_TRANSPORT_SECURITY_TLS_HPP
+#pragma once
 
 #include <websocketpp/transport/asio/security/base.hpp>
 
@@ -450,5 +449,3 @@ private:
 } // namespace asio
 } // namespace transport
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_TRANSPORT_SECURITY_TLS_HPP

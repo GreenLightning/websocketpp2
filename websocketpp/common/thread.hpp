@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_THREAD_HPP
-#define WEBSOCKETPP_COMMON_THREAD_HPP
+#pragma once
 
 #include <websocketpp/common/cpp11.hpp>
 
@@ -22,5 +21,3 @@ using std::condition_variable;
 
 } // namespace lib
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_THREAD_HPP

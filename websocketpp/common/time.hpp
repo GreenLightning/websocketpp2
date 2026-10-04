@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_TIME_HPP
-#define WEBSOCKETPP_COMMON_TIME_HPP
+#pragma once
 
 #include <ctime>
 
@@ -29,5 +28,3 @@ inline std::tm localtime(std::time_t const & time) {
 
 } // lib
 } // websocketpp
-
-#endif // WEBSOCKETPP_COMMON_TIME_HPP

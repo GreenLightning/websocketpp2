@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef HTTP_CONSTANTS_HPP
-#define HTTP_CONSTANTS_HPP
+#pragma once
 
 #include <exception>
 #include <map>
@@ -432,7 +431,3 @@ template<> struct is_error_code_enum<websocketpp::http::error::value>
     static bool const value = true;
 };
 _WEBSOCKETPP_ERROR_CODE_ENUM_NS_END_
-
-
-
-#endif // HTTP_CONSTANTS_HPP

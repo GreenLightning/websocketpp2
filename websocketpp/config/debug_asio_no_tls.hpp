@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONFIG_ASIO_DEBUG_HPP
-#define WEBSOCKETPP_CONFIG_ASIO_DEBUG_HPP
+#pragma once
 
 #include <websocketpp/config/debug.hpp>
 #include <websocketpp/transport/asio/endpoint.hpp>
@@ -46,5 +45,3 @@ struct debug_asio : public debug_core {
 
 } // namespace config
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONFIG_ASIO_DEBUG_HPP

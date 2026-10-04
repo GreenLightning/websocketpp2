@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONFIG_CORE_HPP
-#define WEBSOCKETPP_CONFIG_CORE_HPP
+#pragma once
 
 // Non-Policy common stuff
 #include <websocketpp/common/platforms.hpp>
@@ -279,5 +278,3 @@ struct core {
 
 } // namespace config
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONFIG_CORE_HPP

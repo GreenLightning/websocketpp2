@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_RANDOM_NONE_HPP
-#define WEBSOCKETPP_RANDOM_NONE_HPP
+#pragma once
 
 namespace websocketpp {
 /// Random number generation policies
@@ -33,5 +32,3 @@ class int_generator {
 } // namespace none
 } // namespace random
 } // namespace websocketpp
-
-#endif //WEBSOCKETPP_RANDOM_NONE_HPP

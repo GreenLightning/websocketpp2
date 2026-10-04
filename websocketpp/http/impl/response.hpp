@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef HTTP_PARSER_RESPONSE_IMPL_HPP
-#define HTTP_PARSER_RESPONSE_IMPL_HPP
+#pragma once
 
 #include <algorithm>
 #include <istream>
@@ -326,5 +325,3 @@ inline size_t response::process_body(char const * buf, size_t len, lib::error_co
 } // namespace parser
 } // namespace http
 } // namespace websocketpp
-
-#endif // HTTP_PARSER_RESPONSE_IMPL_HPP

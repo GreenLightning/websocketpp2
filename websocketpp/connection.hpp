@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONNECTION_HPP
-#define WEBSOCKETPP_CONNECTION_HPP
+#pragma once
 
 #include <websocketpp/close.hpp>
 #include <websocketpp/error.hpp>
@@ -1758,5 +1757,3 @@ private:
 } // namespace websocketpp
 
 #include <websocketpp/impl/connection_impl.hpp>
-
-#endif // WEBSOCKETPP_CONNECTION_HPP

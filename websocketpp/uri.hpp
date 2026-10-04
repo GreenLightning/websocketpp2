@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_URI_HPP
-#define WEBSOCKETPP_URI_HPP
+#pragma once
 
 #include <websocketpp/error.hpp>
 
@@ -768,5 +767,3 @@ private:
 typedef lib::shared_ptr<uri> uri_ptr;
 
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_URI_HPP

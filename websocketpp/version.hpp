@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_VERSION_HPP
-#define WEBSOCKETPP_VERSION_HPP
+#pragma once
 
 /// Namespace for the WebSocket++ project
 namespace websocketpp {
@@ -34,5 +33,3 @@ static char const prerelease_flag[] = "dev";
 static char const user_agent[] = "WebSocket++/2.0.0-dev";
 
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_VERSION_HPP

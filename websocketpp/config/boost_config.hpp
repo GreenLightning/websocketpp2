@@ -3,9 +3,6 @@
 // See LICENSE.txt for the full license text.
 
 // Retained for source compatibility. C++11 no longer needs Boost.Config.
-#ifndef WEBSOCKETPP_CONFIG_BOOST_CONFIG_HPP
-#define WEBSOCKETPP_CONFIG_BOOST_CONFIG_HPP
+#pragma once
 
 #include <websocketpp/common/cpp11.hpp>
-
-#endif // WEBSOCKETPP_CONFIG_BOOST_CONFIG_HPP

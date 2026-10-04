@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_REGEX_HPP
-#define WEBSOCKETPP_COMMON_REGEX_HPP
+#pragma once
 
 #include <websocketpp/common/cpp11.hpp>
 #include <regex>
@@ -17,5 +16,3 @@ using std::regex_match;
 
 } // namespace lib
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_REGEX_HPP

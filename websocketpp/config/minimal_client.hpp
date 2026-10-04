@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONFIG_MINIMAL_CLIENT_HPP
-#define WEBSOCKETPP_CONFIG_MINIMAL_CLIENT_HPP
+#pragma once
 
 #include <websocketpp/config/minimal_server.hpp>
 
@@ -45,5 +44,3 @@ typedef minimal_server minimal_client;
 
 } // namespace config
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONFIG_MINIMAL_CLIENT_HPP

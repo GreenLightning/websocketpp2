@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_MESSAGE_BUFFER_MESSAGE_HPP
-#define WEBSOCKETPP_MESSAGE_BUFFER_MESSAGE_HPP
+#pragma once
 
 #include <websocketpp/common/memory.hpp>
 #include <websocketpp/frame.hpp>
@@ -313,5 +312,3 @@ private:
 
 } // namespace message_buffer
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_MESSAGE_BUFFER_MESSAGE_HPP

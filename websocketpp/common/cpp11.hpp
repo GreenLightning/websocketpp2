@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_CPP11_HPP
-#define WEBSOCKETPP_COMMON_CPP11_HPP
+#pragma once
 
 // MSVC historically reports C++98 in __cplusplus unless /Zc:__cplusplus
 // is enabled. VS 2015 and later provide the C++11 features used here.
@@ -45,5 +44,3 @@
 #ifndef _WEBSOCKETPP_PUTTIME_
     #define _WEBSOCKETPP_PUTTIME_
 #endif
-
-#endif // WEBSOCKETPP_COMMON_CPP11_HPP

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONFIG_ASIO_CLIENT_HPP
-#define WEBSOCKETPP_CONFIG_ASIO_CLIENT_HPP
+#pragma once
 
 #include <websocketpp/config/core_client.hpp>
 #include <websocketpp/transport/asio/endpoint.hpp>
@@ -46,5 +45,3 @@ struct asio_client : public core_client {
 
 } // namespace config
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONFIG_ASIO_CLIENT_HPP

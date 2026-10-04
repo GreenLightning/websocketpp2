@@ -26,8 +26,7 @@
  * SOFTWARE.
 */
 
-#ifndef UTF8_VALIDATOR_HPP
-#define UTF8_VALIDATOR_HPP
+#pragma once
 
 #include <websocketpp/common/stdint.hpp>
 
@@ -150,5 +149,3 @@ inline bool validate(std::string const & s) {
 
 } // namespace utf8_validator
 } // namespace websocketpp
-
-#endif // UTF8_VALIDATOR_HPP

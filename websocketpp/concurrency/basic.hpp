@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONCURRENCY_BASIC_HPP
-#define WEBSOCKETPP_CONCURRENCY_BASIC_HPP
+#pragma once
 
 #include <websocketpp/common/thread.hpp>
 
@@ -19,5 +18,3 @@ public:
 
 } // namespace concurrency
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONCURRENCY_BASIC_HPP

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef HTTP_PARSER_REQUEST_IMPL_HPP
-#define HTTP_PARSER_REQUEST_IMPL_HPP
+#pragma once
 
 #include <algorithm>
 #include <sstream>
@@ -237,5 +236,3 @@ inline lib::error_code request::process(std::string::iterator begin, std::string
 } // namespace parser
 } // namespace http
 } // namespace websocketpp
-
-#endif // HTTP_PARSER_REQUEST_IMPL_HPP

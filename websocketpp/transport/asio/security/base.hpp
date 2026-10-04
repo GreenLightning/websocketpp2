@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_TRANSPORT_ASIO_SOCKET_BASE_HPP
-#define WEBSOCKETPP_TRANSPORT_ASIO_SOCKET_BASE_HPP
+#pragma once
 
 #include <websocketpp/common/asio.hpp>
 #include <websocketpp/common/memory.hpp>
@@ -132,5 +131,3 @@ typedef lib::function<void(const lib::error_code&)> init_handler;
 } // namespace asio
 } // namespace transport
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_TRANSPORT_ASIO_SOCKET_BASE_HPP

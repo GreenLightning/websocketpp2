@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONNECTION_IMPL_HPP
-#define WEBSOCKETPP_CONNECTION_IMPL_HPP
+#pragma once
 
 #include <websocketpp/processors/hybi13.hpp>
 
@@ -2437,5 +2436,3 @@ void connection<config>::log_http_result() {
 }
 
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONNECTION_IMPL_HPP

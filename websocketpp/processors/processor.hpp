@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_PROCESSOR_HPP
-#define WEBSOCKETPP_PROCESSOR_HPP
+#pragma once
 
 #include <websocketpp/processors/base.hpp>
 #include <websocketpp/common/system_error.hpp>
@@ -388,5 +387,3 @@ protected:
 
 } // namespace processor
 } // namespace websocketpp
-
-#endif //WEBSOCKETPP_PROCESSOR_HPP

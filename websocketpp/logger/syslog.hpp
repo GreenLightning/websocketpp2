@@ -5,8 +5,7 @@
 // The initial version of this logging policy was contributed to the WebSocket++
 // project by Tom Hughes.
 
-#ifndef WEBSOCKETPP_LOGGER_SYSLOG_HPP
-#define WEBSOCKETPP_LOGGER_SYSLOG_HPP
+#pragma once
 
 #include <syslog.h>
 
@@ -119,5 +118,3 @@ private:
 
 } // log
 } // websocketpp
-
-#endif // WEBSOCKETPP_LOGGER_SYSLOG_HPP

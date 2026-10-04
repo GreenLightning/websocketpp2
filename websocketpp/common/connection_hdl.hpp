@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_CONNECTION_HDL_HPP
-#define WEBSOCKETPP_COMMON_CONNECTION_HDL_HPP
+#pragma once
 
 #include <websocketpp/common/memory.hpp>
 
@@ -25,5 +24,3 @@ namespace websocketpp {
 typedef lib::weak_ptr<void> connection_hdl;
 
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_CONNECTION_HDL_HPP

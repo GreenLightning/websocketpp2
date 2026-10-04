@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_TRANSPORT_STUB_CON_HPP
-#define WEBSOCKETPP_TRANSPORT_STUB_CON_HPP
+#pragma once
 
 #include <websocketpp/transport/stub/base.hpp>
 
@@ -259,5 +258,3 @@ private:
 } // namespace stub
 } // namespace transport
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_TRANSPORT_STUB_CON_HPP

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_NETWORK_HPP
-#define WEBSOCKETPP_COMMON_NETWORK_HPP
+#pragma once
 
 // For ntohs and htons
 #if defined(_WIN32)
@@ -79,5 +78,3 @@ inline uint64_t _ntohll(uint64_t src) {
 } // net
 } // lib
 } // websocketpp
-
-#endif // WEBSOCKETPP_COMMON_NETWORK_HPP

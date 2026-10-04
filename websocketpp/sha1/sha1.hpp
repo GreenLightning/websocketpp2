@@ -33,8 +33,7 @@ under the same license as the original, which is listed below.
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SHA1_DEFINED
-#define SHA1_DEFINED
+#pragma once
 
 #include <cstddef>
 
@@ -187,5 +186,3 @@ inline void calc(void const * src, size_t bytelength, unsigned char * hash) {
 
 } // namespace sha1
 } // namespace websocketpp
-
-#endif // SHA1_DEFINED

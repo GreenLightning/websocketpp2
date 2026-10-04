@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_LOGGER_BASIC_HPP
-#define WEBSOCKETPP_LOGGER_BASIC_HPP
+#pragma once
 
 /* Need a way to print a message to the log
  *
@@ -172,5 +171,3 @@ private:
 
 } // log
 } // websocketpp
-
-#endif // WEBSOCKETPP_LOGGER_BASIC_HPP

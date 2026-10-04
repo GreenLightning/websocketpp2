@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_CONFIG_ASIO_TLS_HPP
-#define WEBSOCKETPP_CONFIG_ASIO_TLS_HPP
+#pragma once
 
 #include <websocketpp/config/core.hpp>
 #include <websocketpp/transport/asio/endpoint.hpp>
@@ -50,5 +49,3 @@ struct asio_tls : public core {
 
 } // namespace config
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_CONFIG_ASIO_TLS_HPP

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_FRAME_HPP
-#define WEBSOCKETPP_FRAME_HPP
+#pragma once
 
 #include <algorithm>
 #include <string>
@@ -837,5 +836,3 @@ inline size_t byte_mask_circ(uint8_t* data, size_t length, size_t prepared_key){
 
 } // namespace frame
 } // namespace websocketpp
-
-#endif //WEBSOCKETPP_FRAME_HPP

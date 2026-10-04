@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_LOGGER_LEVELS_HPP
-#define WEBSOCKETPP_LOGGER_LEVELS_HPP
+#pragma once
 
 #include <websocketpp/common/stdint.hpp>
 
@@ -176,5 +175,3 @@ struct alevel {
 
 } // logger
 } // websocketpp
-
-#endif //WEBSOCKETPP_LOGGER_LEVELS_HPP

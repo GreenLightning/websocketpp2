@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_TRANSPORT_IOSTREAM_CON_HPP
-#define WEBSOCKETPP_TRANSPORT_IOSTREAM_CON_HPP
+#pragma once
 
 #include <websocketpp/transport/iostream/base.hpp>
 
@@ -687,5 +686,3 @@ private:
 } // namespace iostream
 } // namespace transport
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_TRANSPORT_IOSTREAM_CON_HPP

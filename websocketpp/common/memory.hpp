@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_MEMORY_HPP
-#define WEBSOCKETPP_COMMON_MEMORY_HPP
+#pragma once
 
 #include <websocketpp/common/cpp11.hpp>
 #include <memory>
@@ -22,5 +21,3 @@ typedef std::unique_ptr<unsigned char[]> unique_ptr_uchar_array;
 
 } // namespace lib
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_COMMON_MEMORY_HPP

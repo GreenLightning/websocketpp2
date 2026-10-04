@@ -33,8 +33,7 @@
 
 */
 
-#ifndef _BASE64_HPP_
-#define _BASE64_HPP_
+#pragma once
 
 #include <string>
 
@@ -174,5 +173,3 @@ inline std::string base64_decode(std::string const & input) {
 }
 
 } // namespace websocketpp
-
-#endif // _BASE64_HPP_

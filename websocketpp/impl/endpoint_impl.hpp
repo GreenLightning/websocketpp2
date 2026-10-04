@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_ENDPOINT_IMPL_HPP
-#define WEBSOCKETPP_ENDPOINT_IMPL_HPP
+#pragma once
 
 #include <string>
 
@@ -244,5 +243,3 @@ void endpoint<connection,config>::pong(connection_hdl hdl, std::string const & p
 #endif // _WEBSOCKETPP_NO_EXCEPTIONS_
 
 } // namespace websocketpp
-
-#endif // WEBSOCKETPP_ENDPOINT_IMPL_HPP

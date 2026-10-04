@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-#ifndef WEBSOCKETPP_COMMON_PLATFORMS_HPP
-#define WEBSOCKETPP_COMMON_PLATFORMS_HPP
+#pragma once
 
 /**
  * This header contains any platform specific preprocessor adjustments that
@@ -19,5 +18,3 @@
 #if defined(_MSC_VER) && _MSC_VER == 1700
     #define _VARIADIC_MAX 8
 #endif
-
-#endif // WEBSOCKETPP_COMMON_PLATFORMS_HPP
