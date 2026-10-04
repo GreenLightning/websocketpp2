@@ -437,6 +437,40 @@ BOOST_AUTO_TEST_CASE( http_request ) {
     BOOST_CHECK_EQUAL(run_server_test(s,input), output);
 }
 
+BOOST_AUTO_TEST_CASE( http_request_with_custom_status ) {
+    std::string const input = "GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
+    std::string const message = "Queued for processing";
+    server s;
+    s.set_user_agent("");
+    bool called = false;
+    s.set_http_handler([&](websocketpp::connection_hdl hdl) {
+        called = true;
+        server::connection_ptr con = s.get_con_from_hdl(hdl);
+        con->set_status(websocketpp::http::status_code::accepted, message);
+        con->set_body("queued");
+        BOOST_CHECK_EQUAL(con->get_response_code(), websocketpp::http::status_code::accepted);
+        BOOST_CHECK_EQUAL(con->get_response_msg(), message);
+    });
+
+    BOOST_CHECK_EQUAL(run_server_test(s, input),
+        "HTTP/1.1 202 Queued for processing\r\nContent-Length: 6\r\n\r\nqueued");
+    BOOST_CHECK(called);
+}
+
+BOOST_AUTO_TEST_CASE( custom_status_from_invalid_state_throws ) {
+    server s;
+    websocketpp::lib::error_code creation_ec;
+    server::connection_ptr con = s.get_connection(creation_ec);
+    BOOST_REQUIRE(!creation_ec);
+    BOOST_REQUIRE(con);
+    BOOST_CHECK_EXCEPTION(
+        con->set_status(websocketpp::http::status_code::accepted, "Queued for processing"),
+        websocketpp::exception,
+        [](websocketpp::exception const & e) {
+            return e.code() == websocketpp::error::make_error_code(websocketpp::error::invalid_state);
+        });
+}
+
 BOOST_AUTO_TEST_CASE( http_request_with_move ) {
     std::string input = "GET /foo/bar HTTP/1.1\r\nHost: www.example.com\r\nOrigin: http://www.example.com\r\n\r\n";
     std::string output = "HTTP/1.1 200 OK\r\nContent-Length: 8\r\nServer: ";
