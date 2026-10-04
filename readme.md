@@ -54,9 +54,8 @@ When upgrading:
 
 * Compile with C++11 or later (for example, `-std=c++11`). CMake defaults to
   C++11 and preserves newer standards; the installed `websocketpp::websocketpp`
-  target propagates the C++11 requirement. SCons defaults to C++11 on non-Windows
-  platforms. The optional `ENABLE_CPP11` and `WSPP_ENABLE_CPP11` settings have
-  been removed.
+  target propagates the C++11 requirement. The optional `ENABLE_CPP11` and
+  `WSPP_ENABLE_CPP11` settings have been removed.
 * Replace Boost pointers, callbacks, threads, and other standard-library
   substitutes passed to WebSocket++ with `std::` types or `websocketpp::lib`
   aliases. The `_WEBSOCKETPP_NO_CPP11_*` switches no longer select Boost types.

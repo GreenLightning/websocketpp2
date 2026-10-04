@@ -2,6 +2,7 @@ HEAD
 - Raised minimum C++ standard to C++11.
 - Removed support for Boost standard-library polyfills.
 - Removed support for (legacy) draft protocol versions.
+- Removed SCons build system.
 - Removed `_WEBSOCKETPP_MINGW_THREAD_` switch.
 
 websocketpp develop branch - 2026-05-04
