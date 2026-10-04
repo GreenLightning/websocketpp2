@@ -4,16 +4,7 @@
 // This header provides compatibility aliases for standard-library threads.
 #include <websocketpp/common/thread.hpp>
 
-/**
- * Define a semi-cross platform helper method that waits/sleeps for a bit.
- */
-void wait_a_bit() {
-#ifdef WIN32
-    Sleep(1000);
-#else
-    sleep(1);
-#endif
-}
+#include <chrono>
 
 /**
  * The telemetry client connects to a WebSocket server and sends a message every
@@ -78,8 +69,11 @@ public:
         m_client.get_alog().write(websocketpp::log::alevel::app,
             "Connection opened, starting telemetry!");
 
-        scoped_lock guard(m_lock);
-        m_open = true;
+        {
+            scoped_lock guard(m_lock);
+            m_open = true;
+        }
+        m_state_changed.notify_all();
     }
 
     // The close handler will signal that we should stop sending telemetry
@@ -87,8 +81,11 @@ public:
         m_client.get_alog().write(websocketpp::log::alevel::app,
             "Connection closed, stopping telemetry!");
 
-        scoped_lock guard(m_lock);
-        m_done = true;
+        {
+            scoped_lock guard(m_lock);
+            m_done = true;
+        }
+        m_state_changed.notify_all();
     }
 
     // The fail handler will signal that we should stop sending telemetry
@@ -96,8 +93,11 @@ public:
         m_client.get_alog().write(websocketpp::log::alevel::app,
             "Connection failed, stopping telemetry!");
 
-        scoped_lock guard(m_lock);
-        m_done = true;
+        {
+            scoped_lock guard(m_lock);
+            m_done = true;
+        }
+        m_state_changed.notify_all();
     }
 
     void telemetry_loop() {
@@ -105,23 +105,13 @@ public:
         std::stringstream val;
         websocketpp::lib::error_code ec;
 
-        while(1) {
-            bool wait = false;
-
+        while (true) {
             {
-                scoped_lock guard(m_lock);
-                // If the connection has been closed, stop generating telemetry
+                websocketpp::lib::unique_lock<websocketpp::lib::mutex> lock(m_lock);
+                // Waiting releases the mutex so connection handlers can update
+                // the state. The predicate also handles early notifications.
+                m_state_changed.wait(lock, [this] { return m_open || m_done; });
                 if (m_done) {break;}
-
-                // If the connection hasn't been opened yet wait a bit and retry
-                if (!m_open) {
-                    wait = true;
-                }
-            }
-
-            if (wait) {
-                wait_a_bit();
-                continue;
             }
 
             val.str("");
@@ -141,13 +131,20 @@ public:
                 break;
             }
 
-            wait_a_bit();
+            websocketpp::lib::unique_lock<websocketpp::lib::mutex> lock(m_lock);
+            // Keep the one-second interval, but stop promptly on close or fail.
+            if (m_state_changed.wait_for(lock, std::chrono::seconds(1),
+                    [this] { return m_done; })) {
+                break;
+            }
         }
     }
 private:
     client m_client;
     websocketpp::connection_hdl m_hdl;
     websocketpp::lib::mutex m_lock;
+    websocketpp::lib::condition_variable m_state_changed;
+    // Both flags are protected by m_lock.
     bool m_open;
     bool m_done;
 };
