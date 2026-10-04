@@ -1,5 +1,5 @@
-WebSocket++ 2.0
-===============
+WebSocket++ 2.0.0-dev
+====================
 
 _Fork and continuation of the original (now mostly inactive)
 [websocketpp](https://github.com/zaphoyd/websocketpp) project. The goal of
