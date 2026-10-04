@@ -8,7 +8,7 @@
 
 #include <array>
 #include <iterator>
-#include <boost/asio.hpp>
+#include <websocketpp/common/asio.hpp>
 
 #include <websocketpp/common/thread.hpp>
 #include <websocketpp/base64/base64.hpp>
@@ -158,19 +158,19 @@ void run_time_limited_client(client & c, std::string uri, long timeout,
 }
 
 void run_dummy_server(int port) {
-    using boost::asio::ip::tcp;
+    using websocketpp::lib::asio::ip::tcp;
 
     try {
-        boost::asio::io_context io_context;
+        websocketpp::lib::asio::io_context io_context;
         tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v6(), port));
         tcp::socket socket(io_context);
 
         acceptor.accept(socket);
         for (;;) {
             char data[512];
-            boost::system::error_code ec;
-            socket.read_some(boost::asio::buffer(data), ec);
-            if (ec == boost::asio::error::eof) {
+            websocketpp::lib::error_code ec;
+            socket.read_some(websocketpp::lib::asio::buffer(data), ec);
+            if (ec == websocketpp::lib::asio::error::eof) {
                 break;
             } else if (ec) {
                 // other error
@@ -179,27 +179,27 @@ void run_dummy_server(int port) {
         }
     } catch (std::exception & e) {
         std::cout << e.what() << std::endl;
-    } catch (boost::system::error_code & ec) {
+    } catch (websocketpp::lib::error_code & ec) {
         std::cout << ec.message() << std::endl;
     }
 }
 
 void run_dummy_client(std::string port) {
-    using boost::asio::ip::tcp;
+    using websocketpp::lib::asio::ip::tcp;
 
     try {
-        boost::asio::io_context io_context;
+        websocketpp::lib::asio::io_context io_context;
         tcp::resolver resolver(io_context);
         tcp::resolver::results_type results = resolver.resolve(
             "localhost", port, tcp::resolver::address_configured);
         tcp::socket socket(io_context);
 
-        boost::asio::connect(socket, results);
+        websocketpp::lib::asio::connect(socket, results);
         for (;;) {
             char data[512];
-            boost::system::error_code ec;
-            socket.read_some(boost::asio::buffer(data), ec);
-            if (ec == boost::asio::error::eof) {
+            websocketpp::lib::error_code ec;
+            socket.read_some(websocketpp::lib::asio::buffer(data), ec);
+            if (ec == websocketpp::lib::asio::error::eof) {
                 break;
             } else if (ec) {
                 // other error
@@ -208,7 +208,7 @@ void run_dummy_client(std::string port) {
         }
     } catch (std::exception & e) {
         std::cout << e.what() << std::endl;
-    } catch (boost::system::error_code & ec) {
+    } catch (websocketpp::lib::error_code & ec) {
         std::cout << ec.message() << std::endl;
     }
 }
@@ -301,7 +301,7 @@ public:
     : m_timer(m_io_context, std::chrono::seconds(seconds))
     {
         m_timer.async_wait(bind(&test_deadline_timer::expired, this, ::_1));
-        std::size_t (boost::asio::io_context::*run)() = &boost::asio::io_context::run;
+        std::size_t (websocketpp::lib::asio::io_context::*run)() = &websocketpp::lib::asio::io_context::run;
         m_timer_thread = websocketpp::lib::thread(websocketpp::lib::bind(run, &m_io_context));
     }
     ~test_deadline_timer()
@@ -311,16 +311,16 @@ public:
     }
 
   private:
-    void expired(const boost::system::error_code & ec)
+    void expired(const websocketpp::lib::error_code & ec)
     {
-        if (ec == boost::asio::error::operation_aborted)
+        if (ec == websocketpp::lib::asio::error::operation_aborted)
             return;
         BOOST_CHECK(!ec);
         BOOST_FAIL("Test timed out");
     }
 
-    boost::asio::io_context m_io_context;
-    boost::asio::steady_timer m_timer;
+    websocketpp::lib::asio::io_context m_io_context;
+    websocketpp::lib::asio::steady_timer m_timer;
     websocketpp::lib::thread m_timer_thread;
 };
 
@@ -438,17 +438,17 @@ BOOST_AUTO_TEST_CASE( client_self_initiated_close_handshake_timeout ) {
 }
 
 BOOST_AUTO_TEST_CASE( client_peer_initiated_close_handshake_timeout ) {
-    using boost::asio::ip::tcp;
+    using websocketpp::lib::asio::ip::tcp;
     client c;
     c.clear_access_channels(websocketpp::log::alevel::all);
     c.clear_error_channels(websocketpp::log::elevel::all);
     c.init_asio();
 
     // Share the client's event loop so the peer needs no threads or sleeps.
-    boost::asio::io_context & io = c.get_io_context();
-    tcp::acceptor acceptor(io, tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0));
+    websocketpp::lib::asio::io_context & io = c.get_io_context();
+    tcp::acceptor acceptor(io, tcp::endpoint(websocketpp::lib::asio::ip::address_v4::loopback(), 0));
     tcp::socket peer(io);
-    boost::asio::streambuf request_buffer;
+    websocketpp::lib::asio::streambuf request_buffer;
     std::string response;
     std::array<unsigned char, 8> acknowledgement;
     char trailing_byte;
@@ -459,9 +459,9 @@ BOOST_AUTO_TEST_CASE( client_peer_initiated_close_handshake_timeout ) {
     int closes = 0;
     int failures = 0;
 
-    boost::asio::steady_timer deadline(io, std::chrono::seconds(5));
-    deadline.async_wait([&](boost::system::error_code const & ec) {
-        if (ec == boost::asio::error::operation_aborted) return;
+    websocketpp::lib::asio::steady_timer deadline(io, std::chrono::seconds(5));
+    deadline.async_wait([&](websocketpp::lib::error_code const & ec) {
+        if (ec == websocketpp::lib::asio::error::operation_aborted) return;
         BOOST_CHECK(!ec);
         timed_out = true;
         c.stop();
@@ -480,10 +480,10 @@ BOOST_AUTO_TEST_CASE( client_peer_initiated_close_handshake_timeout ) {
         if (peer_eof) deadline.cancel();
     });
 
-    acceptor.async_accept(peer, [&](boost::system::error_code const & ec) {
+    acceptor.async_accept(peer, [&](websocketpp::lib::error_code const & ec) {
         BOOST_REQUIRE(!ec);
-        boost::asio::async_read_until(peer, request_buffer, "\r\n\r\n",
-            [&](boost::system::error_code const & read_ec, size_t) {
+        websocketpp::lib::asio::async_read_until(peer, request_buffer, "\r\n\r\n",
+            [&](websocketpp::lib::error_code const & read_ec, size_t) {
                 BOOST_REQUIRE(!read_ec);
                 std::istream input(&request_buffer);
                 std::string request_text((std::istreambuf_iterator<char>(input)),
@@ -502,11 +502,11 @@ BOOST_AUTO_TEST_CASE( client_peer_initiated_close_handshake_timeout ) {
                     + websocketpp::base64::encode(digest.data(), digest.size()) + "\r\n\r\n";
                 // Immediately initiate a normal close (1000), then keep TCP open.
                 response.append("\x88\x02\x03\xe8", 4);
-                boost::asio::async_write(peer, boost::asio::buffer(response),
-                    [&](boost::system::error_code const & write_ec, size_t) {
+                websocketpp::lib::asio::async_write(peer, websocketpp::lib::asio::buffer(response),
+                    [&](websocketpp::lib::error_code const & write_ec, size_t) {
                         BOOST_REQUIRE(!write_ec);
-                        boost::asio::async_read(peer, boost::asio::buffer(acknowledgement),
-                            [&](boost::system::error_code const & ack_ec, size_t bytes) {
+                        websocketpp::lib::asio::async_read(peer, websocketpp::lib::asio::buffer(acknowledgement),
+                            [&](websocketpp::lib::error_code const & ack_ec, size_t bytes) {
                                 BOOST_REQUIRE(!ack_ec);
                                 BOOST_REQUIRE_EQUAL(bytes, acknowledgement.size());
                                 BOOST_CHECK_EQUAL(acknowledgement[0], 0x88);
@@ -516,9 +516,9 @@ BOOST_AUTO_TEST_CASE( client_peer_initiated_close_handshake_timeout ) {
                                 acknowledged = true;
                                 // The peer never shuts down TCP: the client must
                                 // time out and close it after acknowledging.
-                                boost::asio::async_read(peer, boost::asio::buffer(&trailing_byte, 1),
-                                    [&](boost::system::error_code const & eof_ec, size_t extra_bytes) {
-                                        BOOST_CHECK_EQUAL(eof_ec, boost::asio::error::eof);
+                                websocketpp::lib::asio::async_read(peer, websocketpp::lib::asio::buffer(&trailing_byte, 1),
+                                    [&](websocketpp::lib::error_code const & eof_ec, size_t extra_bytes) {
+                                        BOOST_CHECK_EQUAL(eof_ec, websocketpp::lib::asio::error::eof);
                                         BOOST_CHECK_EQUAL(extra_bytes, 0u);
                                         peer_eof = true;
                                         if (closes) deadline.cancel();
@@ -675,9 +675,9 @@ BOOST_AUTO_TEST_CASE( pause_reading ) {
 
 
 BOOST_AUTO_TEST_CASE( normal_close_cancels_pending_pong_timeout ) {
-    boost::asio::io_context io;
+    websocketpp::lib::asio::io_context io;
     test_support::deadline deadline(io);
-    boost::asio::steady_timer observation(io);
+    websocketpp::lib::asio::steady_timer observation(io);
     server s;
     client c;
     test_support::silence(s);
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE( normal_close_cancels_pending_pong_timeout ) {
             // Keep dispatching after the original pong deadline, so a stale
             // timeout cannot hide behind io_context shutdown.
             observation.expires_after(std::chrono::milliseconds(400));
-            observation.async_wait([&](boost::system::error_code ec) {
+            observation.async_wait([&](websocketpp::lib::error_code ec) {
                 BOOST_CHECK(!ec);
                 deadline.cancel();
             });
@@ -711,7 +711,7 @@ BOOST_AUTO_TEST_CASE( normal_close_cancels_pending_pong_timeout ) {
     auto failed = [&](websocketpp::connection_hdl) { ++failures; io.stop(); };
     s.set_fail_handler(failed);
     c.set_fail_handler(failed);
-    s.listen(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0));
+    s.listen(websocketpp::lib::asio::ip::tcp::endpoint(websocketpp::lib::asio::ip::address_v4::loopback(), 0));
     websocketpp::lib::error_code ec;
     client::connection_ptr con = c.get_connection("ws://127.0.0.1:"
         + std::to_string(test_support::local_endpoint(s).port()), ec);

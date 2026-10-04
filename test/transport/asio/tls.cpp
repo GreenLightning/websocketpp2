@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( server_connection_cleanup ) {
 
 namespace {
 
-namespace ssl = boost::asio::ssl;
+namespace ssl = websocketpp::lib::asio::ssl;
 typedef websocketpp::server<websocketpp::config::asio_tls> tls_server;
 typedef websocketpp::client<websocketpp::config::asio_tls_client> tls_client;
 typedef websocketpp::lib::shared_ptr<ssl::context> context_ptr;
@@ -69,7 +69,7 @@ struct certificate {
 };
 
 struct tls_pair {
-    boost::asio::io_context io;
+    websocketpp::lib::asio::io_context io;
     certificate identity;
     context_ptr server_context;
     context_ptr client_context;
@@ -103,7 +103,7 @@ struct tls_pair {
         client.init_asio(&io);
         server.set_tls_init_handler([this](websocketpp::connection_hdl) { return server_context; });
         client.set_tls_init_handler([this](websocketpp::connection_hdl) { return client_context; });
-        server.listen(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0));
+        server.listen(websocketpp::lib::asio::ip::tcp::endpoint(websocketpp::lib::asio::ip::address_v4::loopback(), 0));
     }
 
     tls_client::connection_ptr connect() {
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE( missing_tls_initialization_handler ) {
     struct socket : websocketpp::transport::asio::tls_socket::connection {
         using websocketpp::transport::asio::tls_socket::connection::init_asio;
     };
-    boost::asio::io_context io;
+    websocketpp::lib::asio::io_context io;
     socket connection;
     BOOST_CHECK_EQUAL(connection.init_asio(&io, socket::strand_ptr(), false),
         websocketpp::transport::asio::socket::make_error_code(

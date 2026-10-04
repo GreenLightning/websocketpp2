@@ -25,23 +25,23 @@
 #include <websocketpp/logger/stub.hpp>
 //#include <websocketpp/logger/basic.hpp>
 
-#include <boost/asio.hpp>
+#include <websocketpp/common/asio.hpp>
 
 // Accept a connection, read data, and discard until EOF
 void run_dummy_server(int port) {
-    using boost::asio::ip::tcp;
+    using websocketpp::lib::asio::ip::tcp;
 
     try {
-        boost::asio::io_context io_context;
+        websocketpp::lib::asio::io_context io_context;
         tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v6(), port));
         tcp::socket socket(io_context);
 
         acceptor.accept(socket);
         for (;;) {
             char data[512];
-            boost::system::error_code ec;
-            socket.read_some(boost::asio::buffer(data), ec);
-            if (ec == boost::asio::error::eof) {
+            websocketpp::lib::error_code ec;
+            socket.read_some(websocketpp::lib::asio::buffer(data), ec);
+            if (ec == websocketpp::lib::asio::error::eof) {
                 break;
             } else if (ec) {
                 // other error
@@ -50,15 +50,15 @@ void run_dummy_server(int port) {
         }
     } catch (std::exception & e) {
         std::cout << e.what() << std::endl;
-    } catch (boost::system::error_code & ec) {
+    } catch (websocketpp::lib::error_code & ec) {
         std::cout << ec.message() << std::endl;
     }
 }
 
 // Wait for the specified time period then fail the test
 void run_test_timer(long value) {
-    boost::asio::io_context ios;
-    boost::asio::steady_timer t(ios,std::chrono::milliseconds(value));
+    websocketpp::lib::asio::io_context ios;
+    websocketpp::lib::asio::steady_timer t(ios,std::chrono::milliseconds(value));
     t.wait();
     BOOST_FAIL( "Test timed out" );
 }
@@ -83,9 +83,9 @@ struct config {
 };
 
 // Mock context that does no validation
-typedef websocketpp::lib::shared_ptr<boost::asio::ssl::context> context_ptr;
+typedef websocketpp::lib::shared_ptr<websocketpp::lib::asio::ssl::context> context_ptr;
 context_ptr on_tls_init(websocketpp::connection_hdl) {
-    return context_ptr(new boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
+    return context_ptr(new websocketpp::lib::asio::ssl::context(websocketpp::lib::asio::ssl::context::sslv23));
 }
 
 // Mock connection

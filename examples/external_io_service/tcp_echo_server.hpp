@@ -17,42 +17,42 @@ using websocketpp::lib::placeholders::_1;
 using websocketpp::lib::placeholders::_2;
 using websocketpp::lib::bind;
 
-namespace asio = websocketpp::lib::asio;
+namespace net = websocketpp::lib::asio;
 
 struct tcp_echo_session : websocketpp::lib::enable_shared_from_this<tcp_echo_session> {
     typedef websocketpp::lib::shared_ptr<tcp_echo_session> ptr;
     
-    tcp_echo_session(asio::io_context & service) : m_socket(service) {}
+    tcp_echo_session(net::io_context & service) : m_socket(service) {}
 
     void start() {
-        m_socket.async_read_some(asio::buffer(m_buffer, sizeof(m_buffer)),
+        m_socket.async_read_some(net::buffer(m_buffer, sizeof(m_buffer)),
             websocketpp::lib::bind(
                 &tcp_echo_session::handle_read, shared_from_this(), _1, _2));
     }
     
-    void handle_read(const asio::error_code & ec, size_t transferred) {
+    void handle_read(const net::error_code & ec, size_t transferred) {
         if (!ec) {
-            asio::async_write(m_socket,
-                asio::buffer(m_buffer, transferred),
+            net::async_write(m_socket,
+                net::buffer(m_buffer, transferred),
                     bind(&tcp_echo_session::handle_write, shared_from_this(), _1));
         }
     }
     
-    void handle_write(const asio::error_code & ec) {
+    void handle_write(const net::error_code & ec) {
         if (!ec) {
-            m_socket.async_read_some(asio::buffer(m_buffer, sizeof(m_buffer)),
+            m_socket.async_read_some(net::buffer(m_buffer, sizeof(m_buffer)),
                 bind(&tcp_echo_session::handle_read, shared_from_this(), _1, _2));
         }
     }
 
-    asio::ip::tcp::socket m_socket;
+    net::ip::tcp::socket m_socket;
     char m_buffer[1024];
 };
 
 struct tcp_echo_server {
-    tcp_echo_server(asio::io_context & service, short port)
+    tcp_echo_server(net::io_context & service, short port)
         : m_service(service)
-        , m_acceptor(service, asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port))
+        , m_acceptor(service, net::ip::tcp::endpoint(net::ip::tcp::v6(), port))
     {
         this->start_accept();
     }
@@ -63,13 +63,13 @@ struct tcp_echo_server {
             bind(&tcp_echo_server::handle_accept, this, new_session, _1));
     }
     
-    void handle_accept(tcp_echo_session::ptr new_session, const asio::error_code & ec) {
+    void handle_accept(tcp_echo_session::ptr new_session, const net::error_code & ec) {
         if (!ec) {
             new_session->start();
         }
         start_accept();
     }
 
-    asio::io_context & m_service;
-    asio::ip::tcp::acceptor m_acceptor;
+    net::io_context & m_service;
+    net::ip::tcp::acceptor m_acceptor;
 };

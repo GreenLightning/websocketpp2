@@ -3,7 +3,7 @@
 // See LICENSE.txt for the full license text.
 #pragma once
 
-#include <boost/asio.hpp>
+#include <websocketpp/common/asio.hpp>
 #include <chrono>
 #include <memory>
 #include <stdexcept>
@@ -15,12 +15,12 @@ namespace test_support {
 // A shared flag keeps a canceled timer's handler valid during later loop runs.
 class deadline {
 public:
-    explicit deadline(boost::asio::io_context & io, std::chrono::seconds timeout = std::chrono::seconds(5))
+    explicit deadline(websocketpp::lib::asio::io_context & io, std::chrono::seconds timeout = std::chrono::seconds(5))
         : expired_(std::make_shared<bool>(false))
         , timer_(io, timeout)
     {
         std::shared_ptr<bool> expired = expired_;
-        timer_.async_wait([expired, &io](boost::system::error_code const & ec) {
+        timer_.async_wait([expired, &io](websocketpp::lib::error_code const & ec) {
             if (!ec) {
                 *expired = true;
                 io.stop();
@@ -33,7 +33,7 @@ public:
 
 private:
     std::shared_ptr<bool> expired_;
-    boost::asio::steady_timer timer_;
+    websocketpp::lib::asio::steady_timer timer_;
 };
 
 template <typename Endpoint>
@@ -43,10 +43,10 @@ void silence(Endpoint & endpoint) {
 }
 
 template <typename Endpoint>
-boost::asio::ip::tcp::endpoint local_endpoint(Endpoint & endpoint) {
-    boost::system::error_code ec;
-    boost::asio::ip::tcp::endpoint result = endpoint.get_local_endpoint(ec);
-    if (ec) throw boost::system::system_error(ec);
+websocketpp::lib::asio::ip::tcp::endpoint local_endpoint(Endpoint & endpoint) {
+    websocketpp::lib::error_code ec;
+    websocketpp::lib::asio::ip::tcp::endpoint result = endpoint.get_local_endpoint(ec);
+    if (ec) throw websocketpp::lib::system_error(ec);
     return result;
 }
 

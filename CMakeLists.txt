@@ -6,6 +6,8 @@ include(CMakePackageConfigHelpers)
 
 option(BUILD_EXAMPLES "Build websocketpp examples." OFF)
 option(BUILD_TESTS "Build websocketpp tests." OFF)
+option(ASIO_STANDALONE
+    "Build examples and tests with standalone Asio instead of Boost.Asio." OFF)
 
 set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}" CACHE STRING
     "Installation directory for header files")
@@ -47,24 +49,44 @@ if(BUILD_EXAMPLES OR BUILD_TESTS)
         set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     endif()
 
-    option(BOOST_STATIC "Link Boost libraries statically." ${MSVC})
-    if(BOOST_STATIC)
-        set(Boost_USE_STATIC_LIBS ON)
-    endif()
-    # Preserve the legacy dependency override without changing the cache.
-    if(NOT "$ENV{BOOST_ROOT_CPP11}" STREQUAL "")
-        file(TO_CMAKE_PATH "$ENV{BOOST_ROOT_CPP11}" BOOST_ROOT)
-    endif()
-    set(Boost_USE_MULTITHREADED ON)
-    set(boost_components)
-    if(BUILD_TESTS)
-        list(APPEND boost_components unit_test_framework)
-    endif()
-    find_package(Boost 1.66 REQUIRED COMPONENTS ${boost_components})
-    # Boost.System became header-only in Boost 1.69.
-    if(Boost_VERSION_STRING VERSION_LESS "1.69.0")
-        list(APPEND boost_components system)
+    # Standalone Asio examples need no Boost; the tests always use Boost.Test.
+    if(BUILD_TESTS OR NOT ASIO_STANDALONE)
+        option(BOOST_STATIC "Link Boost libraries statically." ${MSVC})
+        if(BOOST_STATIC)
+            set(Boost_USE_STATIC_LIBS ON)
+        endif()
+        # Preserve the legacy dependency override without changing the cache.
+        if(NOT "$ENV{BOOST_ROOT_CPP11}" STREQUAL "")
+            file(TO_CMAKE_PATH "$ENV{BOOST_ROOT_CPP11}" BOOST_ROOT)
+        endif()
+        set(Boost_USE_MULTITHREADED ON)
+        set(boost_components)
+        if(BUILD_TESTS)
+            list(APPEND boost_components unit_test_framework)
+        endif()
         find_package(Boost 1.66 REQUIRED COMPONENTS ${boost_components})
+        # Boost.System became header-only in Boost 1.69.
+        if(Boost_VERSION_STRING VERSION_LESS "1.69.0")
+            list(APPEND boost_components system)
+            find_package(Boost 1.66 REQUIRED COMPONENTS ${boost_components})
+        endif()
+    endif()
+
+    if(ASIO_STANDALONE)
+        # Asio is header-only and ships no CMake package. Set ASIO_ROOT to
+        # the directory containing include/asio.hpp if it is not found.
+        find_path(ASIO_INCLUDE_DIR asio.hpp
+            HINTS "${ASIO_ROOT}" ENV ASIO_ROOT
+            PATH_SUFFIXES include asio/include
+            REQUIRED)
+        file(STRINGS "${ASIO_INCLUDE_DIR}/asio/version.hpp" asio_version_line
+            REGEX "^#define ASIO_VERSION [0-9]+")
+        string(REGEX MATCH "[0-9]+" asio_version "${asio_version_line}")
+        if(asio_version LESS 101200)
+            message(FATAL_ERROR
+                "Standalone Asio 1.12.0 or later is required (found ASIO_VERSION ${asio_version}).")
+        endif()
+        message(STATUS "Found standalone Asio: ${ASIO_INCLUDE_DIR} (ASIO_VERSION ${asio_version})")
     endif()
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -80,10 +102,17 @@ if(BUILD_EXAMPLES OR BUILD_TESTS)
 
     # Settings for this project's executables, not for library consumers.
     add_library(websocketpp_build_options INTERFACE)
-    target_link_libraries(websocketpp_build_options INTERFACE
-        Boost::headers Threads::Threads)
-    if(Boost_VERSION_STRING VERSION_LESS "1.69.0")
-        target_link_libraries(websocketpp_build_options INTERFACE Boost::system)
+    target_link_libraries(websocketpp_build_options INTERFACE Threads::Threads)
+    if(Boost_FOUND)
+        target_link_libraries(websocketpp_build_options INTERFACE Boost::headers)
+        if(Boost_VERSION_STRING VERSION_LESS "1.69.0")
+            target_link_libraries(websocketpp_build_options INTERFACE Boost::system)
+        endif()
+    endif()
+    if(ASIO_STANDALONE)
+        target_include_directories(websocketpp_build_options SYSTEM INTERFACE
+            "${ASIO_INCLUDE_DIR}")
+        target_compile_definitions(websocketpp_build_options INTERFACE ASIO_STANDALONE)
     endif()
     if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
         target_link_libraries(websocketpp_build_options INTERFACE network)

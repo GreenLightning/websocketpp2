@@ -1,5 +1,11 @@
 # Exercise both error backends without requiring standalone Asio headers.
-foreach(backend boost standalone)
+# An ASIO_STANDALONE build defines the macro globally, so only the standalone
+# variant is meaningful there.
+set(error_backends standalone)
+if(NOT ASIO_STANDALONE)
+    list(APPEND error_backends boost)
+endif()
+foreach(backend IN LISTS error_backends)
     websocketpp_add_test(test_common_${backend} NO_BOOST_TEST compatibility.cpp)
     target_compile_definitions(test_common_${backend} PRIVATE
         _WEBSOCKETPP_NO_CPP11_MEMORY_

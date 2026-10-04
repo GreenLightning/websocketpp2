@@ -16,7 +16,7 @@
 
 namespace {
 
-typedef boost::asio::ip::tcp tcp;
+typedef websocketpp::lib::asio::ip::tcp tcp;
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 typedef websocketpp::server<websocketpp::config::asio> server;
 
@@ -26,8 +26,8 @@ class proxy {
 public:
     enum behavior { tunnel, reject, stall };
 
-    proxy(boost::asio::io_context & io, behavior mode, tcp::endpoint destination)
-        : acceptor_(io, tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0))
+    proxy(websocketpp::lib::asio::io_context & io, behavior mode, tcp::endpoint destination)
+        : acceptor_(io, tcp::endpoint(websocketpp::lib::asio::ip::address_v4::loopback(), 0))
         , peer_(io), upstream_(io), mode_(mode), destination_(destination)
     {}
 
@@ -36,11 +36,11 @@ public:
     }
 
     void start() {
-        acceptor_.async_accept(peer_, [this](boost::system::error_code ec) {
+        acceptor_.async_accept(peer_, [this](websocketpp::lib::error_code ec) {
             BOOST_REQUIRE(!ec);
             acceptor_.close();
-            boost::asio::async_read_until(peer_, request_buffer_, "\r\n\r\n",
-                [this](boost::system::error_code ec, size_t size) {
+            websocketpp::lib::asio::async_read_until(peer_, request_buffer_, "\r\n\r\n",
+                [this](websocketpp::lib::error_code ec, size_t size) {
                     BOOST_REQUIRE(!ec);
                     std::string raw(size, '\0');
                     std::istream stream(&request_buffer_);
@@ -58,7 +58,7 @@ public:
                         "Basic dXNlcjpwYXNz");
                     unexpected_bytes += request_buffer_.size();
                     if (mode_ == tunnel) {
-                        upstream_.async_connect(destination_, [this](boost::system::error_code ec) {
+                        upstream_.async_connect(destination_, [this](websocketpp::lib::error_code ec) {
                             BOOST_REQUIRE(!ec);
                             respond("HTTP/1.1 200 Connection established\r\n\r\n");
                         });
@@ -79,8 +79,8 @@ public:
 private:
     void respond(std::string response) {
         response_ = response;
-        boost::asio::async_write(peer_, boost::asio::buffer(response_),
-            [this](boost::system::error_code ec, size_t) {
+        websocketpp::lib::asio::async_write(peer_, websocketpp::lib::asio::buffer(response_),
+            [this](websocketpp::lib::error_code ec, size_t) {
                 BOOST_REQUIRE(!ec);
                 if (mode_ == tunnel) {
                     forward(peer_, upstream_, client_buffer_);
@@ -92,21 +92,21 @@ private:
     }
 
     void await_disconnect() {
-        peer_.async_read_some(boost::asio::buffer(client_buffer_),
-            [this](boost::system::error_code ec, size_t size) {
+        peer_.async_read_some(websocketpp::lib::asio::buffer(client_buffer_),
+            [this](websocketpp::lib::error_code ec, size_t size) {
                 unexpected_bytes += size;
-                BOOST_CHECK(ec == boost::asio::error::eof
-                    || ec == boost::asio::error::connection_reset);
+                BOOST_CHECK(ec == websocketpp::lib::asio::error::eof
+                    || ec == websocketpp::lib::asio::error::connection_reset);
                 finish();
             });
     }
 
     void forward(tcp::socket & source, tcp::socket & sink, std::array<char, 4096> & buffer) {
-        source.async_read_some(boost::asio::buffer(buffer),
-            [this, &source, &sink, &buffer](boost::system::error_code ec, size_t size) {
+        source.async_read_some(websocketpp::lib::asio::buffer(buffer),
+            [this, &source, &sink, &buffer](websocketpp::lib::error_code ec, size_t size) {
                 if (ec) { finish(); return; }
-                boost::asio::async_write(sink, boost::asio::buffer(buffer.data(), size),
-                    [this, &source, &sink, &buffer](boost::system::error_code ec, size_t) {
+                websocketpp::lib::asio::async_write(sink, websocketpp::lib::asio::buffer(buffer.data(), size),
+                    [this, &source, &sink, &buffer](websocketpp::lib::error_code ec, size_t) {
                         if (ec) { finish(); return; }
                         forward(source, sink, buffer);
                     });
@@ -116,7 +116,7 @@ private:
     void finish() {
         if (disconnected) return;
         disconnected = true;
-        boost::system::error_code ignored;
+        websocketpp::lib::error_code ignored;
         peer_.close(ignored);
         upstream_.close(ignored);
         if (on_disconnect) on_disconnect();
@@ -126,7 +126,7 @@ private:
     tcp::socket peer_, upstream_;
     behavior mode_;
     tcp::endpoint destination_;
-    boost::asio::streambuf request_buffer_;
+    websocketpp::lib::asio::streambuf request_buffer_;
     std::string response_;
     std::array<char, 4096> client_buffer_, server_buffer_;
 };
@@ -147,12 +147,12 @@ client::connection_ptr proxied_connection(client & endpoint, proxy & intermediar
 }
 
 void check_proxy_failure(proxy::behavior behavior, websocketpp::lib::error_code expected) {
-    boost::asio::io_context io;
+    websocketpp::lib::asio::io_context io;
     test_support::deadline deadline(io);
     client endpoint;
     test_support::silence(endpoint);
     endpoint.init_asio(&io);
-    proxy intermediary(io, behavior, tcp::endpoint(boost::asio::ip::address_v4::loopback(), 1234));
+    proxy intermediary(io, behavior, tcp::endpoint(websocketpp::lib::asio::ip::address_v4::loopback(), 1234));
     int failures = 0, opens = 0, messages = 0, closes = 0;
     auto finish = [&] { if (failures && intermediary.disconnected) deadline.cancel(); };
     intermediary.on_disconnect = finish;
@@ -182,7 +182,7 @@ void check_proxy_failure(proxy::behavior behavior, websocketpp::lib::error_code 
 } // namespace
 
 BOOST_AUTO_TEST_CASE( authenticated_connect_proxy_echo ) {
-    boost::asio::io_context io;
+    websocketpp::lib::asio::io_context io;
     test_support::deadline deadline(io);
     server upstream;
     client endpoint;
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( authenticated_connect_proxy_echo ) {
     test_support::silence(endpoint);
     upstream.init_asio(&io);
     endpoint.init_asio(&io);
-    upstream.listen(tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0));
+    upstream.listen(tcp::endpoint(websocketpp::lib::asio::ip::address_v4::loopback(), 0));
     proxy intermediary(io, proxy::tunnel, test_support::local_endpoint(upstream));
     int opens = 0, closes = 0, failures = 0, server_messages = 0, client_messages = 0;
     std::string const payload("proxy\0echo", 10);
