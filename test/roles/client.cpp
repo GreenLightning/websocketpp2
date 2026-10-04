@@ -7,6 +7,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
+#include <sstream>
+#include <vector>
 
 #include <websocketpp/random/random_device.hpp>
 
@@ -277,3 +279,88 @@ BOOST_AUTO_TEST_CASE( unrequested_subprotocol ) {
 }
 
 
+namespace {
+
+void check_subprotocol_response(std::vector<std::string> const & offered,
+    std::vector<std::string> const & selected_headers,
+    std::string const & expected_protocol, websocketpp::lib::error_code expected_error)
+{
+    client c;
+    unsigned opens = 0;
+    unsigned failures = 0;
+    c.set_open_handler([&](websocketpp::connection_hdl hdl) {
+        ++opens;
+        BOOST_CHECK_EQUAL(c.get_con_from_hdl(hdl)->get_subprotocol(), expected_protocol);
+    });
+    c.set_fail_handler([&](websocketpp::connection_hdl hdl) {
+        ++failures;
+        BOOST_CHECK_EQUAL(c.get_con_from_hdl(hdl)->get_ec(), expected_error);
+        BOOST_CHECK(c.get_con_from_hdl(hdl)->get_subprotocol().empty());
+    });
+
+    std::stringstream out;
+    c.register_ostream(&out);
+    websocketpp::lib::error_code ec;
+    connection_ptr con = c.get_connection("ws://localhost/", ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
+    for (auto const & protocol : offered) {
+        con->add_subprotocol(protocol, ec);
+        BOOST_REQUIRE(!ec);
+    }
+    c.connect(con);
+
+    std::string const request_bytes = out.str();
+    websocketpp::http::parser::request request;
+    request.consume(request_bytes.data(), request_bytes.size(), ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(request.ready());
+    auto mm = websocketpp::lib::make_shared<stub_config::con_msg_manager_type>();
+    stub_config::rng_type rng;
+    websocketpp::processor::hybi13<stub_config> proc(false, true, mm, rng);
+    websocketpp::http::parser::response response;
+    response.set_version("HTTP/1.1");
+    BOOST_REQUIRE(!response.set_status(websocketpp::http::status_code::switching_protocols));
+    BOOST_REQUIRE(!proc.process_handshake(request, "", response));
+
+    // Preserve separate header lines to exercise duplicate-header parsing too.
+    std::string response_bytes = response.raw();
+    response_bytes.erase(response_bytes.size() - 2);
+    for (auto const & header : selected_headers) {
+        response_bytes += "Sec-WebSocket-Protocol: " + header + "\r\n";
+    }
+    response_bytes += "\r\n";
+    BOOST_CHECK_EQUAL(con->read_all(response_bytes.data(), response_bytes.size()),
+        response_bytes.size());
+
+    BOOST_CHECK_EQUAL(con->get_ec(), expected_error);
+    BOOST_CHECK_EQUAL(con->get_subprotocol(), expected_protocol);
+    BOOST_CHECK_EQUAL(opens, expected_error ? 0u : 1u);
+    BOOST_CHECK_EQUAL(failures, expected_error ? 1u : 0u);
+    BOOST_CHECK(con->get_state() == (expected_error ?
+        websocketpp::session::state::closed : websocketpp::session::state::open));
+}
+
+} // namespace
+
+BOOST_AUTO_TEST_CASE( negotiated_subprotocol_visible_in_open_handler ) {
+    check_subprotocol_response({"foo", "bar"}, {"bar"}, "bar", websocketpp::lib::error_code());
+}
+
+BOOST_AUTO_TEST_CASE( absent_negotiated_subprotocol ) {
+    check_subprotocol_response({"foo", "bar"}, {}, "", websocketpp::lib::error_code());
+    check_subprotocol_response({}, {}, "", websocketpp::lib::error_code());
+}
+
+BOOST_AUTO_TEST_CASE( multiple_negotiated_subprotocols_rejected ) {
+    auto const error = websocketpp::error::make_error_code(websocketpp::error::unrequested_subprotocol);
+    check_subprotocol_response({"foo", "bar"}, {"foo, bar"}, "", error);
+    check_subprotocol_response({"foo", "bar"}, {"foo", "bar"}, "", error);
+    check_subprotocol_response({"foo"}, {"foo", "foo"}, "", error);
+}
+
+BOOST_AUTO_TEST_CASE( unsolicited_negotiated_subprotocol_rejected ) {
+    auto const error = websocketpp::error::make_error_code(websocketpp::error::unrequested_subprotocol);
+    check_subprotocol_response({}, {"foo"}, "", error);
+    check_subprotocol_response({"foo"}, {"Foo"}, "", error);
+}
