@@ -21,6 +21,8 @@
 #include <websocketpp/server.hpp>
 #include <websocketpp/client.hpp>
 
+#include "asio/test_support.hpp"
+
 struct config : public websocketpp::config::asio_client {
     typedef config type;
     typedef websocketpp::config::asio base;
@@ -671,6 +673,63 @@ BOOST_AUTO_TEST_CASE( pause_reading ) {
     BOOST_CHECK_EQUAL( con->read_some(buffer+1, 1), 1);
 }
 
+
+BOOST_AUTO_TEST_CASE( normal_close_cancels_pending_pong_timeout ) {
+    boost::asio::io_context io;
+    test_support::deadline deadline(io);
+    boost::asio::steady_timer observation(io);
+    server s;
+    client c;
+    test_support::silence(s);
+    test_support::silence(c);
+    s.init_asio(&io);
+    c.init_asio(&io);
+    c.set_pong_timeout(200);
+    int opens = 0, closes = 0, failures = 0, pings = 0, timeouts = 0;
+    s.set_open_handler([&](websocketpp::connection_hdl) { ++opens; });
+    c.set_open_handler([&](websocketpp::connection_hdl hdl) { ++opens; c.ping(hdl, "pending"); });
+    s.set_ping_handler([&](websocketpp::connection_hdl hdl, std::string payload) {
+        ++pings;
+        BOOST_CHECK_EQUAL(payload, "pending");
+        s.close(hdl, websocketpp::close::status::normal, "done");
+        return false; // Suppress the pong, leaving the client's timer pending.
+    });
+    c.set_pong_timeout_handler([&](websocketpp::connection_hdl, std::string) { ++timeouts; });
+    auto closed = [&](websocketpp::connection_hdl) {
+        if (++closes == 2) {
+            // Keep dispatching after the original pong deadline, so a stale
+            // timeout cannot hide behind io_context shutdown.
+            observation.expires_after(std::chrono::milliseconds(400));
+            observation.async_wait([&](boost::system::error_code ec) {
+                BOOST_CHECK(!ec);
+                deadline.cancel();
+            });
+        }
+    };
+    s.set_close_handler(closed);
+    c.set_close_handler(closed);
+    auto failed = [&](websocketpp::connection_hdl) { ++failures; io.stop(); };
+    s.set_fail_handler(failed);
+    c.set_fail_handler(failed);
+    s.listen(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::loopback(), 0));
+    websocketpp::lib::error_code ec;
+    client::connection_ptr con = c.get_connection("ws://127.0.0.1:"
+        + std::to_string(test_support::local_endpoint(s).port()), ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
+    test_support::accept_one(s);
+    c.connect(con);
+    io.run();
+    BOOST_CHECK(!deadline.expired());
+    BOOST_CHECK_EQUAL(opens, 2);
+    BOOST_CHECK_EQUAL(closes, 2);
+    BOOST_CHECK_EQUAL(failures, 0);
+    BOOST_CHECK_EQUAL(pings, 1);
+    BOOST_CHECK_EQUAL(timeouts, 0);
+    BOOST_CHECK(!con->get_ec());
+    BOOST_CHECK_EQUAL(con->get_local_close_code(), websocketpp::close::status::normal);
+    BOOST_CHECK_EQUAL(con->get_remote_close_code(), websocketpp::close::status::normal);
+}
 
 #ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 BOOST_AUTO_TEST_CASE( move_construct_transport ) {

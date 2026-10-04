@@ -12,6 +12,122 @@
 //#include <websocketpp/config/minimal_client.hpp>
 #include <websocketpp/transport/debug/endpoint.hpp>
 
+namespace {
+
+// Hold frame writes until the test explicitly completes them. HTTP handshake
+// writes still use the ordinary iostream transport.
+template <typename Config>
+class controlled_write_connection : public websocketpp::transport::iostream::connection<Config> {
+public:
+    typedef websocketpp::transport::iostream::connection<Config> base;
+    typedef websocketpp::lib::shared_ptr<controlled_write_connection> ptr;
+
+    controlled_write_connection(bool is_server,
+        websocketpp::lib::shared_ptr<typename Config::alog_type> const & alog,
+        websocketpp::lib::shared_ptr<typename Config::elog_type> const & elog)
+        : base(is_server, alog, elog) {}
+
+    void complete_write(websocketpp::lib::error_code ec) {
+        BOOST_REQUIRE(pending_write);
+        websocketpp::transport::write_handler handler = pending_write;
+        pending_write = websocketpp::transport::write_handler();
+        handler(ec);
+    }
+
+    int writes = 0;
+    std::string written;
+
+protected:
+    using base::async_write;
+
+    void async_write(std::vector<websocketpp::transport::buffer> const & buffers,
+        websocketpp::transport::write_handler handler)
+    {
+        BOOST_REQUIRE(!pending_write);
+        ++writes;
+        for (auto const & buffer : buffers) written.append(buffer.buf, buffer.len);
+        pending_write = handler;
+    }
+
+private:
+    websocketpp::transport::write_handler pending_write;
+};
+
+template <typename Config>
+struct controlled_write_endpoint : websocketpp::transport::iostream::endpoint<Config> {
+    typedef controlled_write_connection<Config> transport_con_type;
+    typedef typename transport_con_type::ptr transport_con_ptr;
+};
+
+struct controlled_write_config : websocketpp::config::core {
+    typedef controlled_write_endpoint<core::transport_config> transport_type;
+};
+
+} // namespace
+
+BOOST_AUTO_TEST_CASE( send_before_open_does_not_write_data ) {
+    client endpoint;
+    std::stringstream output;
+    endpoint.register_ostream(&output);
+    websocketpp::lib::error_code ec;
+    client::connection_ptr con = endpoint.get_connection("ws://localhost", ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
+    BOOST_CHECK(con->get_state() == websocketpp::session::state::connecting);
+    BOOST_CHECK_EQUAL(con->send(std::string("early"), websocketpp::frame::opcode::BINARY),
+        websocketpp::error::make_error_code(websocketpp::error::invalid_state));
+    BOOST_CHECK(output.str().empty());
+
+    endpoint.connect(con);
+    std::string const handshake = output.str();
+    BOOST_REQUIRE(!handshake.empty());
+    BOOST_CHECK(con->get_state() == websocketpp::session::state::connecting);
+    BOOST_CHECK_EQUAL(con->send(std::string("still early"), websocketpp::frame::opcode::BINARY),
+        websocketpp::error::make_error_code(websocketpp::error::invalid_state));
+    BOOST_CHECK_EQUAL(output.str(), handshake);
+}
+
+BOOST_AUTO_TEST_CASE( write_failure_stops_queued_messages ) {
+    typedef websocketpp::server<controlled_write_config> endpoint_type;
+    endpoint_type endpoint;
+    endpoint.clear_access_channels(websocketpp::log::alevel::all);
+    endpoint.clear_error_channels(websocketpp::log::elevel::all);
+    std::stringstream output;
+    endpoint.register_ostream(&output);
+    int opens = 0, closes = 0, failures = 0;
+    endpoint.set_open_handler([&](websocketpp::connection_hdl) { ++opens; });
+    endpoint.set_close_handler([&](websocketpp::connection_hdl) { ++closes; });
+    endpoint.set_fail_handler([&](websocketpp::connection_hdl) { ++failures; });
+    endpoint_type::connection_ptr con = endpoint.get_connection();
+    con->start();
+    std::string const handshake = "GET / HTTP/1.1\r\nHost: localhost\r\n"
+        "Connection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\n"
+        "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n";
+    BOOST_REQUIRE_EQUAL(con->read_all(handshake.data(), handshake.size()), handshake.size());
+    BOOST_REQUIRE(con->get_state() == websocketpp::session::state::open);
+    BOOST_REQUIRE_EQUAL(opens, 1);
+    BOOST_REQUIRE(!con->send(std::string("first"), websocketpp::frame::opcode::BINARY));
+    BOOST_REQUIRE(!con->send(std::string("second"), websocketpp::frame::opcode::BINARY));
+    BOOST_REQUIRE(!con->send(std::string("third"), websocketpp::frame::opcode::BINARY));
+    BOOST_CHECK_EQUAL(con->writes, 1);
+    BOOST_CHECK_EQUAL(con->written, std::string("\x82\x05" "first", 7));
+    BOOST_CHECK_EQUAL(con->get_buffered_amount(), 11u);
+
+    websocketpp::lib::error_code const error = websocketpp::transport::error::make_error_code(
+        websocketpp::transport::error::pass_through);
+    con->complete_write(error);
+    BOOST_CHECK_EQUAL(con->get_ec(), error);
+    BOOST_CHECK(con->get_state() == websocketpp::session::state::closed);
+    BOOST_CHECK_EQUAL(closes, 1);
+    BOOST_CHECK_EQUAL(failures, 0);
+    BOOST_CHECK_EQUAL(con->writes, 1);
+    BOOST_CHECK_EQUAL(con->written, std::string("\x82\x05" "first", 7));
+    BOOST_CHECK_EQUAL(con->send(std::string("after failure"), websocketpp::frame::opcode::BINARY),
+        websocketpp::error::make_error_code(websocketpp::error::invalid_state));
+    BOOST_CHECK_EQUAL(con->writes, 1);
+    BOOST_CHECK_EQUAL(closes, 1);
+}
+
 // NOTE: these tests currently test against hardcoded output values. I am not
 // sure how problematic this will be. If issues arise like order of headers the
 // output should be parsed by http::response and have values checked directly
@@ -619,5 +735,3 @@ BOOST_AUTO_TEST_CASE( server_handshake_timeout_race2 ) {
     
     BOOST_CHECK_EQUAL(con->get_ec(), make_error_code(websocketpp::error::open_handshake_timeout));
 }
-
-

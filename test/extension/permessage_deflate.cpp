@@ -732,6 +732,19 @@ BOOST_AUTO_TEST_CASE( decompress_data ) {
     BOOST_CHECK_EQUAL( out, reference );
 }
 
+BOOST_AUTO_TEST_CASE( decompress_invalid_deflate_block ) {
+    ext_vars v;
+    BOOST_REQUIRE(!v.exts.init(true));
+
+    // BFINAL=1, BTYPE=3: the reserved block type must fail before producing data.
+    uint8_t const input[] = {0x07};
+    std::string output;
+    v.ec = v.exts.decompress(input, sizeof(input), output);
+
+    BOOST_CHECK_EQUAL(v.ec, pmde::make_error_code(pmde::zlib_error));
+    BOOST_CHECK(output.empty());
+}
+
 BOOST_AUTO_TEST_CASE( decompress_data_at_size_limit ) {
     ext_vars v;
     size_t const limit = config::max_message_size;

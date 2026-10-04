@@ -1,5 +1,6 @@
 websocketpp_add_test(test_transport integration.cpp)
 websocketpp_add_test(test_transport_asio_security asio/security.cpp)
+websocketpp_add_test(test_transport_asio_proxy asio/proxy.cpp)
 
 websocketpp_add_test(test_transport_asio_tls asio/tls.cpp)
 target_link_libraries(test_transport_asio_tls PRIVATE OpenSSL::SSL)
