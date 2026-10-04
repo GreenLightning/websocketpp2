@@ -90,3 +90,7 @@ Makefile
 bin
 
 Testing/Temporary/CTestCostData.txt
+
+# GitHub Pages build and CI dependency cache
+_site/
+/deps/

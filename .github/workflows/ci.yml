@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [GCC, Clang, MSVC]
+        build_type: [Debug, Release]
+        include:
+          - name: GCC
+            os: ubuntu-24.04
+            cxx: g++
+          - name: Clang
+            os: ubuntu-24.04
+            cxx: clang++
+          - name: MSVC
+            os: windows-2022
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ninja-build libboost-dev libboost-test-dev libssl-dev zlib1g-dev
+          echo "CXX=${{ matrix.cxx }}" >> "$GITHUB_ENV"
+          echo "CMAKE_GENERATOR=Ninja" >> "$GITHUB_ENV"
+
+      # The static-md triplet matches the BOOST_STATIC default for MSVC.
+      - name: Set up vcpkg (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/vcpkg-cache"
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$(cygpath -w "$RUNNER_TEMP/vcpkg-cache")" >> "$GITHUB_ENV"
+          echo "VCPKG_COMMIT=$(git -C "$VCPKG_INSTALLATION_ROOT" rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "CMAKE_TOOLCHAIN_FILE=$(cygpath -m "$VCPKG_INSTALLATION_ROOT")/scripts/buildsystems/vcpkg.cmake" >> "$GITHUB_ENV"
+          echo "VCPKG_TARGET_TRIPLET=x64-windows-static-md" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg packages (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/vcpkg-cache
+          key: vcpkg-x64-windows-static-md-${{ env.VCPKG_COMMIT }}
+          restore-keys: vcpkg-x64-windows-static-md-
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: >
+          "$VCPKG_INSTALLATION_ROOT/vcpkg" install
+          --triplet "$VCPKG_TARGET_TRIPLET"
+          boost-asio boost-test openssl zlib
+
+      - name: Configure
+        shell: bash
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
+          ${VCPKG_TARGET_TRIPLET:+-DVCPKG_TARGET_TRIPLET=$VCPKG_TARGET_TRIPLET}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel
+
+      - name: Test
+        run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure --parallel 4
+
+  asio-standalone:
+    name: Standalone Asio
+    runs-on: ubuntu-24.04
+    env:
+      CMAKE_GENERATOR: Ninja
+    steps:
+      - uses: actions/checkout@v7
+
+      # Boost is only installed for Boost.Test here.
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ninja-build libasio-dev libboost-dev libboost-test-dev libssl-dev zlib1g-dev
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Debug
+          -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
+          -DASIO_STANDALONE=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --parallel 4
+
+  oldest-deps:
+    name: Oldest dependencies (${{ matrix.backend }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [boost, standalone]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: deps
+          key: oldest-deps-${{ matrix.backend }}-${{ hashFiles('.github/scripts/oldest-deps.sh') }}
+
+      # JavaScript actions do not run on the glibc of this image, so the
+      # container is started by hand instead of with `container:`.
+      - name: Build and test in ubuntu:18.04
+        run: >
+          docker run --rm
+          -v "$PWD":/src -w /src
+          -v "$PWD/deps":/deps
+          ubuntu:18.04
+          .github/scripts/oldest-deps.sh ${{ matrix.backend }}
+
+      - name: Make the cache readable
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" deps

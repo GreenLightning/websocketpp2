@@ -1,6 +1,9 @@
 WebSocket++ 2.0.0-dev
 ====================
 
+[![CI](https://github.com/GreenLightning/websocketpp2/actions/workflows/ci.yml/badge.svg)](https://github.com/GreenLightning/websocketpp2/actions/workflows/ci.yml)
+[![Pages](https://github.com/GreenLightning/websocketpp2/actions/workflows/pages.yml/badge.svg)](https://greenlightning.github.io/websocketpp2/)
+
 _Fork and continuation of the original (now mostly inactive)
 [websocketpp](https://github.com/zaphoyd/websocketpp) project. The goal of
 this fork is to modernize and evolve the library while providing a
@@ -94,12 +97,39 @@ OpenSSL and zlib enable their corresponding targets when available. Use `-DBOOST
 for static Boost libraries. Installing just the header-only library requires
 none of these dependencies.
 
+The examples and tests use Boost.Asio by default. Pass `-DASIO_STANDALONE=ON`
+to build them with standalone Asio instead, and `-DASIO_ROOT=<path>` if the Asio
+headers are not in a default location. Boost is then only needed for the tests
+(they use Boost.Test), not for the examples.
+
 Compression and TLS tests have separate executables. Run their groups with
 `ctest --test-dir build -L compression` or `ctest --test-dir build -L tls`.
 
 Link to `websocketpp::websocketpp` after either `add_subdirectory()` or
 `find_package(websocketpp CONFIG REQUIRED)`. The target supplies the headers and
 C++11 requirement; applications select and link their own transport dependencies.
+
+Continuous integration and documentation
+========================================
+
+GitHub Actions builds and tests every push and pull request
+([.github/workflows/ci.yml](.github/workflows/ci.yml)):
+
+* GCC and Clang on Linux and MSVC on Windows, each in Debug and Release
+* standalone Asio on Linux
+* the oldest supported dependencies (Boost 1.66.0, standalone Asio 1.12.0,
+  CMake 3.18) with GCC 7.5 in an `ubuntu:18.04` container
+
+The last job can be reproduced locally with Docker:
+
+```sh
+docker run --rm -v "$PWD":/src -w /src ubuntu:18.04 \
+    .github/scripts/oldest-deps.sh boost    # or: standalone
+```
+
+The website and the Doxygen documentation are published to
+<https://greenlightning.github.io/websocketpp2/> from `master`. To build the
+same site locally (Doxygen required), run `website/build.sh _site`.
 
 Browser example
 ===============
