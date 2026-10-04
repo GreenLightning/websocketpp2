@@ -3,7 +3,7 @@
 // See LICENSE.txt for the full license text.
 
 //#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE transport_asio_timers
+#define BOOST_TEST_MODULE transport_asio_tls_timers
 #include <boost/test/unit_test.hpp>
 
 #include <exception>

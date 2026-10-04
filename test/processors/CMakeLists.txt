@@ -1,7 +1,9 @@
 websocketpp_add_test(test_processor processor.cpp)
-if(ZLIB_FOUND)
-    websocketpp_add_test(test_processor_hybi13 hybi13.cpp)
-    target_link_libraries(test_processor_hybi13 PRIVATE ZLIB::ZLIB)
-    websocketpp_add_test(test_processor_extension_permessage_compress extension_permessage_compress.cpp)
-    target_link_libraries(test_processor_extension_permessage_compress PRIVATE ZLIB::ZLIB)
-endif()
+websocketpp_add_test(test_processor_hybi13 hybi13.cpp)
+
+websocketpp_add_test(test_processor_hybi13_compression hybi13_compression.cpp)
+target_link_libraries(test_processor_hybi13_compression PRIVATE ZLIB::ZLIB)
+websocketpp_add_test(test_processor_extension_permessage_compress extension_permessage_compress.cpp)
+target_link_libraries(test_processor_extension_permessage_compress PRIVATE ZLIB::ZLIB)
+set_tests_properties(test_processor_hybi13_compression
+    test_processor_extension_permessage_compress PROPERTIES LABELS compression)

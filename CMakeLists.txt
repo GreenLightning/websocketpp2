@@ -69,8 +69,14 @@ if(BUILD_EXAMPLES OR BUILD_TESTS)
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    find_package(OpenSSL QUIET)
-    find_package(ZLIB QUIET)
+    if(BUILD_TESTS)
+        # A test build always includes the TLS and compression suites.
+        find_package(OpenSSL REQUIRED)
+        find_package(ZLIB REQUIRED)
+    else()
+        find_package(OpenSSL QUIET)
+        find_package(ZLIB QUIET)
+    endif()
 
     # Settings for this project's executables, not for library consumers.
     add_library(websocketpp_build_options INTERFACE)

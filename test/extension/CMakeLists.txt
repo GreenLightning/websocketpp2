@@ -1,5 +1,4 @@
 websocketpp_add_test(test_extension extension.cpp)
-if(ZLIB_FOUND)
-    websocketpp_add_test(test_permessage_deflate permessage_deflate.cpp)
-    target_link_libraries(test_permessage_deflate PRIVATE ZLIB::ZLIB)
-endif()
+websocketpp_add_test(test_permessage_deflate permessage_deflate.cpp)
+target_link_libraries(test_permessage_deflate PRIVATE ZLIB::ZLIB)
+set_tests_properties(test_permessage_deflate PROPERTIES LABELS compression)

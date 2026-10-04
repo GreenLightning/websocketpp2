@@ -1,11 +1,12 @@
-if(OPENSSL_FOUND)
-    websocketpp_add_test(test_transport integration.cpp)
-    target_link_libraries(test_transport PRIVATE OpenSSL::SSL)
-    websocketpp_add_test(test_transport_asio_timers asio/timers.cpp)
-    target_link_libraries(test_transport_asio_timers PRIVATE OpenSSL::SSL)
-    websocketpp_add_test(test_transport_asio_security asio/security.cpp)
-    target_link_libraries(test_transport_asio_security PRIVATE OpenSSL::SSL)
-endif()
+websocketpp_add_test(test_transport integration.cpp)
+websocketpp_add_test(test_transport_asio_security asio/security.cpp)
+
+websocketpp_add_test(test_transport_asio_tls asio/tls.cpp)
+target_link_libraries(test_transport_asio_tls PRIVATE OpenSSL::SSL)
+websocketpp_add_test(test_transport_asio_tls_timers asio/tls_timers.cpp)
+target_link_libraries(test_transport_asio_tls_timers PRIVATE OpenSSL::SSL)
+set_tests_properties(test_transport_asio_tls test_transport_asio_tls_timers
+    PROPERTIES LABELS tls)
 
 websocketpp_add_test(test_transport_iostream_base iostream/base.cpp)
 websocketpp_add_test(test_transport_iostream_endpoint iostream/endpoint.cpp)

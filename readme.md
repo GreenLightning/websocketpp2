@@ -82,10 +82,14 @@ cmake --build build
 ```
 
 Choose the build type explicitly for single-configuration generators; no default
-is imposed. Boost is required for examples and tests, while OpenSSL and zlib
-enable their corresponding targets when available. Use `-DBOOST_STATIC=ON`
+is imposed. Boost is required for examples and tests. Test builds also require
+OpenSSL and zlib so the full suite is always built. For builds with only examples,
+OpenSSL and zlib enable their corresponding targets when available. Use `-DBOOST_STATIC=ON`
 for static Boost libraries. Installing just the header-only library requires
 none of these dependencies.
+
+Compression and TLS tests have separate executables. Run their groups with
+`ctest --test-dir build -L compression` or `ctest --test-dir build -L tls`.
 
 Link to `websocketpp::websocketpp` after either `add_subdirectory()` or
 `find_package(websocketpp CONFIG REQUIRED)`. The target supplies the headers and
