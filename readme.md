@@ -52,16 +52,37 @@ iostream/raw transports require neither Boost nor Asio headers.
 
 When upgrading:
 
-* Compile with C++11 or later (for example, `-std=c++11`). CMake defaults to
-  C++11 and preserves newer standards; the installed `websocketpp::websocketpp`
-  target propagates the C++11 requirement. The optional `ENABLE_CPP11` and
-  `WSPP_ENABLE_CPP11` settings have been removed.
+* Compile with C++11 or later (for example, `-std=c++11`). The
+  `websocketpp::websocketpp` CMake target propagates this minimum requirement
+  for both source-tree and installed consumers, while preserving newer standards.
+  The optional `ENABLE_CPP11` and `WSPP_ENABLE_CPP11` settings have been removed.
 * Replace Boost pointers, callbacks, threads, and other standard-library
   substitutes passed to WebSocket++ with `std::` types or `websocketpp::lib`
   aliases. The `_WEBSOCKETPP_NO_CPP11_*` switches no longer select Boost types.
 * Use `websocketpp::lib::error_code` in handlers and output parameters to match
   the selected backend. C++11 builds using Boost.Asio now use Boost.System error
   types; the former C++11 error-type selection switches have no effect.
+
+Building with CMake
+===================
+
+CMake 3.18 or later is required. To build the examples and tests:
+
+```sh
+cmake -S . -B build -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+(cd build && ctest --output-on-failure)
+```
+
+Choose the build type explicitly for single-configuration generators; no default
+is imposed. Boost is required for examples and tests, while OpenSSL and zlib
+enable their corresponding targets when available. Use `-DBOOST_STATIC=ON`
+for static Boost libraries. Installing just the header-only library requires
+none of these dependencies.
+
+Link to `websocketpp::websocketpp` after either `add_subdirectory()` or
+`find_package(websocketpp CONFIG REQUIRED)`. The target supplies the headers and
+C++11 requirement; applications select and link their own transport dependencies.
 
 License
 =======

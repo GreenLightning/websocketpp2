@@ -13,7 +13,7 @@ The git repository is organized into several directories:
 
 WebSocket++ is a header only library. You can start using it by including the websocketpp source directory in your project's include path and including the appropriate WebSocket++ headers in your program. You may also need to include and/or link to appropriate Boost/system libraries. TODO: More information: Building a program with WebSocket++, Walkthroughs of the example programs
 
-WebSocket++ includes CMake scripts for building the examples and unit tests. CMake is not needed unless you want to build tests or examples in an automated fashion.
+WebSocket++ includes scripts requiring CMake 3.18 or later for building the examples and unit tests. CMake is not needed unless you want to build tests or examples in an automated fashion.
 
 __Usage questions__ should be posted to the project mailing list at http://groups.google.com/group/websocketpp/ or the IRC channel (\#websocketpp on freenode).
 

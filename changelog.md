@@ -1,5 +1,7 @@
 HEAD
+- Added support for CMake 4.
 - Raised minimum C++ standard to C++11.
+- Raised minimum CMake version to 3.18.
 - Removed support for Boost standard-library polyfills.
 - Removed support for (legacy) draft protocol versions.
 - Removed SCons build system.

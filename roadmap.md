@@ -26,9 +26,9 @@ Complete & Tested:
 - socket_init_handler
 - tls_init_handler
 - tcp_init_handler
+- Build system update (CMake 3 and 4)
 
 Ongoing work
-- Build system update (CMake 3 and 4)
 - Dependency updates
 	- C++ standard
 	- Asio

@@ -1,32 +1,7 @@
-# Generic processor tests
-file (GLOB SOURCE processor.cpp)
-
-init_target (test_processor)
-build_test (${TARGET_NAME} ${SOURCE})
-link_boost ()
-final_target ()
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "test")
-
-if (ZLIB_FOUND)
-
-# Hybi13 processor tests
-file (GLOB SOURCE hybi13.cpp)
-
-init_target (test_processor_hybi13)
-build_test (${TARGET_NAME} ${SOURCE})
-link_boost ()
-link_zlib()
-final_target ()
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "test")
-
-# Permessage compression extension processor tests
-file (GLOB SOURCE extension_permessage_compress.cpp)
-
-init_target (test_processor_extension_permessage_compress)
-build_test (${TARGET_NAME} ${SOURCE})
-link_boost ()
-link_zlib()
-final_target ()
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "test")
-
-endif ( ZLIB_FOUND )
+websocketpp_add_test(test_processor processor.cpp)
+if(ZLIB_FOUND)
+    websocketpp_add_test(test_processor_hybi13 hybi13.cpp)
+    target_link_libraries(test_processor_hybi13 PRIVATE ZLIB::ZLIB)
+    websocketpp_add_test(test_processor_extension_permessage_compress extension_permessage_compress.cpp)
+    target_link_libraries(test_processor_extension_permessage_compress PRIVATE ZLIB::ZLIB)
+endif()
