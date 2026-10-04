@@ -101,6 +101,36 @@ Link to `websocketpp::websocketpp` after either `add_subdirectory()` or
 `find_package(websocketpp CONFIG REQUIRED)`. The target supplies the headers and
 C++11 requirement; applications select and link their own transport dependencies.
 
+Browser example
+===============
+
+Open [examples/browser_client/index.html](examples/browser_client/index.html)
+directly in a modern browser. It uses the native WebSocket API and needs no
+JavaScript dependencies or build step. Build and run an echo server from the
+repository root:
+
+```sh
+cmake -S . -B build -DBUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target echo_server
+./build/bin/echo_serverd
+```
+
+Connect to `ws://localhost:9002`, then send a text message to see its echo.
+Debug executables have a `d` suffix; Release executables do not. For a
+multi-configuration generator, also pass `--config Debug` when building and
+run the executable from `build/bin/Debug/`.
+
+Alternatively, build and run `simple_broadcast_server` or `broadcast_server`
+and connect from two browser tabs to exchange messages. Run one server at a
+time on the default port. To receive telemetry, build `telemetry_server` and run
+`./build/bin/telemetry_serverd examples/telemetry_server/ 9002`; the trailing
+slash on the document root is required by that example. The browser client
+will display the counter messages once connected.
+
+For a TLS server, enter its `wss://` URL and use a certificate trusted by the
+browser. If you serve the browser client over HTTPS, use `wss://` to avoid
+mixed-content restrictions.
+
 Author
 ======
 

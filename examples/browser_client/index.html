@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebSocket++ browser client</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 48rem; margin: 3rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.8rem; margin-bottom: .5rem; }
+    p { line-height: 1.5; }
+    form { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.2rem 0; }
+    label { flex-basis: 100%; font-weight: 600; }
+    input { flex: 1; min-width: 10rem; }
+    input, button { font: inherit; padding: .65rem; border: 1px solid #8888; border-radius: .4rem; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; opacity: .5; }
+    #status { font-weight: 600; }
+    #messages { height: 18rem; overflow: auto; padding: .75rem; border: 1px solid #8888; border-radius: .4rem; }
+    #messages p { margin: 0 0 .5rem; white-space: pre-wrap; overflow-wrap: anywhere; font: .9rem ui-monospace, monospace; }
+    .received { color: light-dark(#12633a, #86efac); }
+    .error { color: light-dark(#a32121, #fca5a5); }
+    code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket++ browser client</h1>
+  <p>Start <code>echo_server</code> to echo messages, or
+    <code>simple_broadcast_server</code> / <code>broadcast_server</code> to share
+    messages between browser tabs. Connect to <code>telemetry_server</code> to
+    receive its counter updates. These examples default to port 9002.</p>
+
+  <form id="connection-form">
+    <label for="url">Server URL</label>
+    <input id="url" type="url" value="ws://localhost:9002" required spellcheck="false">
+    <button id="connect" type="submit">Connect</button>
+    <button id="disconnect" type="button" disabled>Disconnect</button>
+  </form>
+  <p>Status: <span id="status" role="status">Disconnected</span></p>
+
+  <form id="message-form">
+    <label for="message">Text message</label>
+    <input id="message" value="Hello, WebSocket++!" disabled>
+    <button id="send" type="submit" disabled>Send</button>
+  </form>
+
+  <h2>Messages</h2>
+  <div id="messages" role="log" aria-label="WebSocket messages" aria-live="polite" tabindex="0"></div>
+  <p><button id="clear" type="button">Clear log</button> · Most recent 200 events</p>
+
+  <script>
+    "use strict";
+
+    const url = document.querySelector("#url");
+    const connect = document.querySelector("#connect");
+    const disconnect = document.querySelector("#disconnect");
+    const status = document.querySelector("#status");
+    const message = document.querySelector("#message");
+    const send = document.querySelector("#send");
+    const messages = document.querySelector("#messages");
+    let socket = null;
+
+    function log(text, kind = "") {
+      const entry = document.createElement("p");
+      entry.className = kind;
+      // Treat server payloads as text, including HTML-looking messages.
+      entry.textContent = `${new Date().toLocaleTimeString()} ${text}`;
+      messages.append(entry);
+      if (messages.childElementCount > 200) {
+        messages.firstElementChild.remove();
+      }
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function updateControls() {
+      const state = socket ? socket.readyState : WebSocket.CLOSED;
+      status.textContent = ["Connecting", "Connected", "Disconnecting", "Disconnected"][state];
+      url.disabled = connect.disabled = state !== WebSocket.CLOSED;
+      disconnect.disabled = state !== WebSocket.OPEN;
+      message.disabled = send.disabled = state !== WebSocket.OPEN;
+    }
+
+    document.querySelector("#connection-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (socket && socket.readyState !== WebSocket.CLOSED) return;
+
+      try {
+        const endpoint = new URL(url.value.trim());
+        if (!["ws:", "wss:"].includes(endpoint.protocol)) {
+          throw new Error("Use a ws:// or wss:// URL.");
+        }
+        socket = new WebSocket(endpoint.href);
+      } catch (error) {
+        log(`Error: ${error.message}`, "error");
+        return;
+      }
+
+      // Keep callbacks tied to this connection, even after a reconnect.
+      const current = socket;
+      current.binaryType = "arraybuffer";
+      updateControls();
+      log(`Connecting to ${current.url}`);
+
+      current.addEventListener("open", () => {
+        if (socket !== current) return;
+        updateControls();
+        log("Connection opened.");
+        message.focus();
+      });
+      current.addEventListener("message", (event) => {
+        if (socket !== current) return;
+        const payload = typeof event.data === "string"
+          ? event.data : `[binary message: ${event.data.byteLength} bytes]`;
+        log(`Received: ${payload}`, "received");
+      });
+      current.addEventListener("error", () => {
+        if (socket !== current) return;
+        log("Connection error. Check the server URL and the browser console.", "error");
+      });
+      current.addEventListener("close", (event) => {
+        if (socket !== current) return;
+        socket = null;
+        updateControls();
+        log(`Connection closed (${event.code})${event.reason ? `: ${event.reason}` : ""}.`);
+      });
+    });
+
+    disconnect.addEventListener("click", () => {
+      if (!socket || socket.readyState !== WebSocket.OPEN) return;
+      socket.close(1000, "Browser client disconnect");
+      updateControls();
+    });
+
+    document.querySelector("#message-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!socket || socket.readyState !== WebSocket.OPEN) return;
+      try {
+        socket.send(message.value);
+        log(`Sent: ${message.value}`);
+      } catch (error) {
+        log(`Send failed: ${error.message}`, "error");
+      }
+      updateControls();
+    });
+
+    document.querySelector("#clear").addEventListener("click", () => messages.replaceChildren());
+  </script>
+</body>
+</html>
