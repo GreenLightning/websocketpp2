@@ -154,23 +154,15 @@ typedef lib::function<void(connection_hdl)> http_handler;
 typedef lib::function<void(lib::error_code const & ec, size_t bytes_transferred)> read_handler;
 typedef lib::function<void(lib::error_code const & ec)> write_frame_handler;
 
-// constants related to the default WebSocket protocol versions available
+// RFC6455 is the only supported WebSocket protocol version.
 #ifdef _WEBSOCKETPP_INITIALIZER_LISTS_ // simplified C++11 version
     /// Container that stores the list of protocol versions supported
-    /**
-     * @todo Move this to configs to allow compile/runtime disabling or enabling
-     * of protocol versions
-     */
-    static std::vector<int> const versions_supported = {0,7,8,13};
+    static std::vector<int> const versions_supported = {13};
 #else
     /// Helper array to get around lack of initializer lists pre C++11
-    static int const helper[] = {0,7,8,13};
+    static int const helper[] = {13};
     /// Container that stores the list of protocol versions supported
-    /**
-     * @todo Move this to configs to allow compile/runtime disabling or enabling
-     * of protocol versions
-     */
-    static std::vector<int> const versions_supported(helper,helper+4);
+    static std::vector<int> const versions_supported(helper,helper+1);
 #endif
 
 namespace session {

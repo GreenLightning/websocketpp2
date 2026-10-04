@@ -158,8 +158,7 @@ struct core {
     /// WebSocket Protocol version to use as a client
     /**
      * What version of the WebSocket Protocol to use for outgoing client
-     * connections. Setting this to a value other than 13 (RFC6455) is not
-     * recommended.
+     * connections. Only version 13 (RFC6455) is supported.
      */
     static const int client_version = 13; // RFC6455
 

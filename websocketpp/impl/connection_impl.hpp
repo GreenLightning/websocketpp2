@@ -28,9 +28,6 @@
 #ifndef WEBSOCKETPP_CONNECTION_IMPL_HPP
 #define WEBSOCKETPP_CONNECTION_IMPL_HPP
 
-#include <websocketpp/processors/hybi00.hpp>
-#include <websocketpp/processors/hybi07.hpp>
-#include <websocketpp/processors/hybi08.hpp>
 #include <websocketpp/processors/hybi13.hpp>
 
 #include <websocketpp/processors/processor.hpp>
@@ -870,6 +867,10 @@ void connection<config>::handle_transport_init(lib::error_code const & ec) {
         // config file and send a handshake request.
         m_internal_state = istate::WRITE_HTTP_REQUEST;
         m_processor = get_processor(config::client_version);
+        if (!m_processor) {
+            this->terminate(error::make_error_code(error::unsupported_version));
+            return;
+        }
         this->send_http_request();
     }
 }
@@ -986,30 +987,8 @@ void connection<config>::handle_read_handshake(lib::error_code const & ec,
             return;
         }
 
-        if (m_processor && m_processor->get_version() == 0) {
-            // Version 00 has an extra requirement to read some bytes after the
-            // handshake
-            if (bytes_transferred-bytes_processed >= 8) {
-                m_request.replace_header(
-                    "Sec-WebSocket-Key3",
-                    std::string(m_buf+bytes_processed,m_buf+bytes_processed+8)
-                );
-                bytes_processed += 8;
-            } else {
-                // TODO: need more bytes
-                m_alog->write(log::alevel::devel,"short key3 read");
-                m_response.set_status(http::status_code::internal_server_error);
-                this->write_http_response_error(processor::error::make_error_code(processor::error::short_key3));
-                return;
-            }
-        }
-
         if (m_alog->static_test(log::alevel::devel)) {
             m_alog->write(log::alevel::devel,m_request.raw());
-            if (!m_request.get_header("Sec-WebSocket-Key3").empty()) {
-                m_alog->write(log::alevel::devel,
-                    utility::to_hex(m_request.get_header("Sec-WebSocket-Key3")));
-            }
         }
 
         // The remaining bytes in m_buf are frame data. Copy them to the
@@ -1055,11 +1034,8 @@ void connection<config>::handle_read_handshake(lib::error_code const & ec,
     }
 }
 
-// write_http_response requires the request to be fully read and the connection
-// to be in the PROCESS_HTTP_REQUEST state. In some cases we can detect errors
-// before the request is fully read (specifically at a point where we aren't
-// sure if the hybi00 key3 bytes need to be read). This method sets the correct
-// state and calls write_http_response
+// write_http_response requires the PROCESS_HTTP_REQUEST state. This helper
+// sets that state when an error is detected while reading the HTTP request.
 template <typename config>
 void connection<config>::write_http_response_error(lib::error_code const & ec) {
     if (m_internal_state != istate::READ_HTTP_REQUEST) {
@@ -1445,10 +1421,6 @@ void connection<config>::write_http_response(lib::error_code const & ec) {
 
     if (m_alog->static_test(log::alevel::devel)) {
         m_alog->write(log::alevel::devel,"Raw Handshake response:\n"+m_handshake_buffer);
-        if (!m_response.get_header("Sec-WebSocket-Key3").empty()) {
-            m_alog->write(log::alevel::devel,
-                utility::to_hex(m_response.get_header("Sec-WebSocket-Key3")));
-        }
     }
 
     // write raw bytes
@@ -2306,46 +2278,17 @@ lib::error_code connection<config>::send_close_frame(close::status::value code,
 template <typename config>
 typename connection<config>::processor_ptr
 connection<config>::get_processor(int version) const {
-    // TODO: allow disabling certain versions
-    
-    processor_ptr p;
-    
-    switch (version) {
-        case 0:
-            p = lib::make_shared<processor::hybi00<config> >(
-                transport_con_type::is_secure(),
-                m_is_server,
-                m_msg_manager
-            );
-            break;
-        case 7:
-            p = lib::make_shared<processor::hybi07<config> >(
-                transport_con_type::is_secure(),
-                m_is_server,
-                m_msg_manager,
-                lib::ref(m_rng)
-            );
-            break;
-        case 8:
-            p = lib::make_shared<processor::hybi08<config> >(
-                transport_con_type::is_secure(),
-                m_is_server,
-                m_msg_manager,
-                lib::ref(m_rng)
-            );
-            break;
-        case 13:
-            p = lib::make_shared<processor::hybi13<config> >(
-                transport_con_type::is_secure(),
-                m_is_server,
-                m_msg_manager,
-                lib::ref(m_rng)
-            );
-            break;
-        default:
-            return p;
+    if (version != 13) {
+        return processor_ptr();
     }
-    
+
+    processor_ptr p = lib::make_shared<processor::hybi13<config> >(
+        transport_con_type::is_secure(),
+        m_is_server,
+        m_msg_manager,
+        lib::ref(m_rng)
+    );
+
     // Settings not configured by the constructor
     p->set_max_message_size(m_max_message_size);
     

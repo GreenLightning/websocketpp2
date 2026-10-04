@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( version_blank ) {
     r.consume(handshake.c_str(),handshake.size(),ec);
     BOOST_CHECK_EQUAL(ec, websocketpp::lib::error_code());
 
-    BOOST_CHECK(websocketpp::processor::get_websocket_version(r) == 0);
+    BOOST_CHECK(websocketpp::processor::get_websocket_version(r) == -1);
 }
 
 BOOST_AUTO_TEST_CASE( version_7 ) {

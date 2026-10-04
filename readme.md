@@ -16,8 +16,7 @@ policies to support other networking or event libraries as needed.
 Major Features
 ==============
 
-* Full support for RFC6455
-* Partial support for Hixie 76 / Hybi 00, 07-17 draft specs (server only)
+* Full support for RFC6455 (WebSocket version 13 only)
 * Message/event based interface
 * Supports secure WebSockets (TLS), IPv6, and explicit proxies.
 * Flexible dependency management (C++11 Standard Library or Boost)

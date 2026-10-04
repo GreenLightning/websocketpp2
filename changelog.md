@@ -1,4 +1,4 @@
-
+- Removed support for (legacy) draft protocol versions.
 
 websocketpp develop branch - 2026-05-04
 - MINOR BREAKING BUNDLED LIBRARY CHANGE: The bundled mini-HTTP library has

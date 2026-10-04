@@ -242,6 +242,92 @@ BOOST_AUTO_TEST_CASE( basic_websocket_request ) {
     BOOST_CHECK(run_server_test(s,input) == output);
 }
 
+BOOST_AUTO_TEST_CASE( supported_websocket_versions ) {
+    connection_setup env(true);
+    std::vector<int> const & versions = env.c.get_supported_versions();
+    BOOST_REQUIRE_EQUAL(versions.size(), 1);
+    BOOST_CHECK_EQUAL(versions[0], 13);
+}
+
+BOOST_AUTO_TEST_CASE( draft_websocket_requests_rejected ) {
+    int const versions[] = {0, 7, 8};
+    for (size_t i = 0; i < sizeof(versions)/sizeof(versions[0]); ++i) {
+        std::stringstream input;
+        input << "GET / HTTP/1.1\r\nHost: www.example.com\r\n"
+              << "Connection: Upgrade\r\nUpgrade: websocket\r\n"
+              << "Sec-WebSocket-Version: " << versions[i] << "\r\n"
+              << "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n";
+
+        server s;
+        s.set_user_agent("test");
+        s.set_open_handler(&fail_on_open);
+        s.set_http_handler(&fail_on_http);
+        bool called = false;
+        websocketpp::lib::error_code ec = make_error_code(websocketpp::error::unsupported_version);
+        s.set_fail_handler(bind(&check_on_fail,&s,ec,websocketpp::lib::ref(called),::_1));
+
+        BOOST_CHECK_EQUAL(run_server_test(s,input.str()),
+            "HTTP/1.1 400 Bad Request\r\nSec-WebSocket-Version: 13\r\nServer: test\r\n\r\n");
+        BOOST_CHECK(called);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( versionless_websocket_requests_rejected ) {
+    std::string input = "GET / HTTP/1.1\r\nHost: www.example.com\r\n"
+        "Connection: Upgrade\r\nUpgrade: websocket\r\n"
+        "Sec-WebSocket-Key1: 3e6b263  4 17 80\r\n"
+        "Sec-WebSocket-Key2: 17  9 G`ZD9   2 2b 7X 3 /r90\r\n\r\n";
+
+    // Reject as soon as the headers arrive, with or without the legacy challenge.
+    for (int i = 0; i < 2; ++i) {
+        server s;
+        s.set_user_agent("test");
+        s.set_open_handler(&fail_on_open);
+        s.set_http_handler(&fail_on_http);
+        bool called = false;
+        websocketpp::lib::error_code ec = make_error_code(websocketpp::error::invalid_version);
+        s.set_fail_handler(bind(&check_on_fail,&s,ec,websocketpp::lib::ref(called),::_1));
+
+        BOOST_CHECK_EQUAL(run_server_test(s,input),
+            "HTTP/1.1 400 Bad Request\r\nServer: test\r\n\r\n");
+        BOOST_CHECK(called);
+        input += "WjN}|M(6";
+    }
+}
+
+template <int version>
+struct draft_client_config : public websocketpp::config::core {
+    static const int client_version = version;
+};
+
+template <int version>
+void check_draft_client_rejected() {
+    typedef websocketpp::client<draft_client_config<version> > draft_client;
+    draft_client c;
+    c.clear_access_channels(websocketpp::log::alevel::all);
+    c.clear_error_channels(websocketpp::log::elevel::all);
+    std::stringstream output;
+    c.register_ostream(&output);
+
+    bool failed = false;
+    c.set_fail_handler([&failed](websocketpp::connection_hdl) { failed = true; });
+    websocketpp::lib::error_code ec;
+    typename draft_client::connection_ptr con = c.get_connection("ws://localhost",ec);
+    BOOST_REQUIRE(!ec);
+    c.connect(con);
+
+    BOOST_CHECK(failed);
+    BOOST_CHECK_EQUAL(con->get_ec(), make_error_code(websocketpp::error::unsupported_version));
+    BOOST_CHECK_EQUAL(con->get_state(), websocketpp::session::state::closed);
+    BOOST_CHECK(output.str().empty());
+}
+
+BOOST_AUTO_TEST_CASE( draft_client_versions_rejected ) {
+    check_draft_client_rejected<0>();
+    check_draft_client_rejected<7>();
+    check_draft_client_rejected<8>();
+}
+
 BOOST_AUTO_TEST_CASE( http_request ) {
     std::string input = "GET /foo/bar HTTP/1.1\r\nHost: www.example.com\r\nOrigin: http://www.example.com\r\n\r\n";
     std::string output = "HTTP/1.1 200 OK\r\nContent-Length: 8\r\nServer: ";

@@ -93,34 +93,6 @@ New BSD License / 3-Clause BSD License
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-****** MD5 Library (common/md5.hpp) ******
-md5.hpp is a reformulation of the md5.h and md5.c code from
-http://www.opensource.apple.com/source/cups/cups-59/cups/md5.c to allow it to
-function as a component of a header only library. This conversion was done by
-Peter Thorson (webmaster@zaphoyd.com) in 2012 for the WebSocket++ project. The
-changes are released under the same license as the original (listed below)
-
-Copyright (C) 1999, 2002 Aladdin Enterprises.  All rights reserved.
-
-This software is provided 'as-is', without any express or implied
-warranty.  In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not
- claim that you wrote the original software. If you use this software
- in a product, an acknowledgment in the product documentation would be
- appreciated but is not required.
-2. Altered source versions must be plainly marked as such, and must not be
- misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
-
-L. Peter Deutsch
-ghost@aladdin.com
-
 ****** UTF8 Validation logic (utf8_validation.hpp) ******
 utf8_validation.hpp is adapted from code originally written by Bjoern Hoehrmann
 <bjoern@hoehrmann.de>. See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for

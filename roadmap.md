@@ -22,7 +22,6 @@ Complete & Tested:
 - Timeouts
 - Subprotocol negotiation
 - validate_handler
-- Hybi 00/Hixie 76 legacy protocol support
 - Outgoing Proxy Support
 - socket_init_handler
 - tls_init_handler

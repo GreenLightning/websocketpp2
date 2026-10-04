@@ -89,15 +89,6 @@ bool is_websocket_handshake(request_type& r) {
 
 /// Extract the version from a WebSocket handshake request
 /**
- * A blank version header indicates a spec before versions were introduced.
- * The only such versions in shipping products are Hixie Draft 75 and Hixie
- * Draft 76. Draft 75 is present in Chrome 4-5 and Safari 5.0.0, Draft 76 (also
- * known as hybi 00 is present in Chrome 6-13 and Safari 5.0.1+. As
- * differentiating between these two sets of browsers is very difficult and
- * Safari 5.0.1+ accounts for the vast majority of cases in the wild this
- * function assumes that all handshakes without a valid version header are
- * Hybi 00.
- *
  * @param r The WebSocket handshake request to read.
  *
  * @return The WebSocket handshake version or -1 if there was an extraction
@@ -110,7 +101,7 @@ int get_websocket_version(request_type& r) {
     }
     
     if (r.get_header("Sec-WebSocket-Version").empty()) {
-        return 0;
+        return -1;
     }
 
     int version;
