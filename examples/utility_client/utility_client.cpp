@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-// **NOTE:** This file is a snapshot of the WebSocket++ utility client tutorial.
-// Additional related material can be found in the tutorials/utility_client
-// directory of the WebSocket++ repository.
+// Interactive client for opening and closing WebSocket connections and
+// sending and inspecting messages.
 
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
