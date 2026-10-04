@@ -84,11 +84,6 @@ Link to `websocketpp::websocketpp` after either `add_subdirectory()` or
 `find_package(websocketpp CONFIG REQUIRED)`. The target supplies the headers and
 C++11 requirement; applications select and link their own transport dependencies.
 
-License
-=======
-
-3-Clause BSD (See COPYING for more details)
-
 Author
 ======
 

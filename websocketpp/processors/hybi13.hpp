@@ -9,7 +9,7 @@
 #include <websocketpp/frame.hpp>
 #include <websocketpp/http/constants.hpp>
 
-#include <websocketpp/utf8_validator.hpp>
+#include <websocketpp/utf8/validator.hpp>
 #include <websocketpp/sha1/sha1.hpp>
 #include <websocketpp/base64/base64.hpp>
 
@@ -243,7 +243,7 @@ public:
             std::copy(conv.c,conv.c+4,&raw_key[i*4]);
         }
 
-        req.replace_header("Sec-WebSocket-Key",base64_encode(raw_key, 16));
+        req.replace_header("Sec-WebSocket-Key",base64::encode(raw_key, sizeof(raw_key)));
 
         if (m_permessage_deflate.is_implemented()) {
             std::string offer = m_permessage_deflate.generate_offer();
@@ -514,7 +514,7 @@ public:
         }
 
         // ensure that text messages end on a valid UTF8 code point
-        if (frame::get_opcode(m_basic_header) == frame::opcode::TEXT) {
+        if (m_current_msg->msg_ptr->get_opcode() == frame::opcode::TEXT) {
             if (!m_current_msg->validator.complete()) {
                 return make_error_code(error::invalid_utf8);
             }
@@ -613,7 +613,7 @@ public:
         std::string& o = out->get_raw_payload();
 
         // validate payload utf8
-        if (op == frame::opcode::TEXT && !utf8_validator::validate(i)) {
+        if (op == frame::opcode::TEXT && !utf8::validate(i)) {
             return make_error_code(error::invalid_payload);
         }
 
@@ -727,9 +727,8 @@ protected:
     lib::error_code process_handshake_key(std::string & key) const {
         key.append(constants::handshake_guid);
 
-        unsigned char message_digest[20];
-        sha1::calc(key.c_str(),key.length(),message_digest);
-        key = base64_encode(message_digest,20);
+        sha1::digest const message_digest = sha1::calc(key.data(), key.size());
+        key = base64::encode(message_digest.data(), message_digest.size());
 
         return lib::error_code();
     }
@@ -824,7 +823,7 @@ protected:
 
         // validate unmasked, decompressed values
         if (m_current_msg->msg_ptr->get_opcode() == frame::opcode::TEXT) {
-            if (!m_current_msg->validator.decode(out.begin()+offset,out.end())) {
+            if (!m_current_msg->validator.consume(out.data() + offset, out.size() - offset)) {
                 ec = make_error_code(error::invalid_utf8);
                 return 0;
             }
@@ -1037,7 +1036,7 @@ protected:
 
         message_ptr msg_ptr;        // pointer to the message data buffer
         size_t      prepared_key;   // prepared masking key
-        utf8_validator::validator validator; // utf8 validation state
+        utf8::validator validator; // utf8 validation state
     };
 
     // Basic header of the frame being read

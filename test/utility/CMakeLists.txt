@@ -1,6 +1,8 @@
+websocketpp_add_test(test_base64 base64.cpp)
 websocketpp_add_test(test_close close.cpp)
 websocketpp_add_test(test_error error.cpp)
 websocketpp_add_test(test_frame frame.cpp)
 websocketpp_add_test(test_sha1 sha1.cpp)
 websocketpp_add_test(test_uri uri.cpp)
 websocketpp_add_test(test_utilities utilities.cpp)
+websocketpp_add_test(test_utf8 utf8.cpp)

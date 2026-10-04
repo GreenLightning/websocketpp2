@@ -618,6 +618,41 @@ static std::vector<uint8_t> build_masked_frame(bool fin, bool rsv1,
     return frame;
 }
 
+BOOST_AUTO_TEST_CASE( utf8_across_payload_chunks_and_empty_fragments ) {
+    processor_setup env(true);
+    std::string const text = "\xf0\x9f\x98\x80";
+    std::vector<uint8_t> stream = build_masked_frame(false, false, 0x01, text.substr(0, 2));
+    std::vector<uint8_t> const empty = build_masked_frame(false, false, 0x00, "");
+    std::vector<uint8_t> const final = build_masked_frame(true, false, 0x00, text.substr(2));
+    stream.insert(stream.end(), empty.begin(), empty.end());
+    stream.insert(stream.end(), final.begin(), final.end());
+
+    // Each consume call appends at most one byte to the accumulating payload.
+    for (size_t i = 0; i < stream.size(); ++i) {
+        BOOST_REQUIRE_EQUAL(env.p.consume(&stream[i], 1, env.ec), 1u);
+        BOOST_REQUIRE(!env.ec);
+        BOOST_CHECK_EQUAL(env.p.ready(), i + 1 == stream.size());
+    }
+    message_ptr message = env.p.get_message();
+    BOOST_REQUIRE(message);
+    BOOST_CHECK_EQUAL(message->get_payload(), text);
+}
+
+BOOST_AUTO_TEST_CASE( invalid_and_incomplete_utf8_across_fragments ) {
+    const std::string suffixes[] = {"A", ""};
+    for (std::string const& suffix : suffixes) {
+        processor_setup env(true);
+        std::vector<uint8_t> prefix = build_masked_frame(false, false, 0x01, "\xe2");
+        std::vector<uint8_t> final = build_masked_frame(true, false, 0x00, suffix);
+        env.p.consume(prefix.data(), prefix.size(), env.ec);
+        BOOST_REQUIRE(!env.ec);
+        BOOST_REQUIRE(!env.p.ready());
+        env.p.consume(final.data(), final.size(), env.ec);
+        BOOST_CHECK_EQUAL(env.ec, websocketpp::processor::error::invalid_utf8);
+        BOOST_CHECK(!env.p.ready());
+    }
+}
+
 // Verifies that lowering the limit at runtime via set_max_message_size on
 // the processor reaches the permessage-deflate extension. Without runtime
 // propagation through the handle_max_message_size_changed hook, the
@@ -933,4 +968,3 @@ BOOST_AUTO_TEST_CASE( extension_negotiation_permessage_deflate ) {
     BOOST_CHECK( !neg_results.first );
     BOOST_CHECK_EQUAL( neg_results.second, "permessage-deflate" );
 }
-

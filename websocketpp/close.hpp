@@ -11,7 +11,7 @@
 #include <websocketpp/error.hpp>
 #include <websocketpp/common/network.hpp>
 #include <websocketpp/common/stdint.hpp>
-#include <websocketpp/utf8_validator.hpp>
+#include <websocketpp/utf8/validator.hpp>
 
 #include <string>
 
@@ -315,7 +315,7 @@ inline std::string extract_reason(std::string const & payload, lib::error_code
         reason.append(payload.begin()+2,payload.end());
     }
 
-    if (!websocketpp::utf8_validator::validate(reason)) {
+    if (!websocketpp::utf8::validate(reason)) {
         ec = make_error_code(error::invalid_utf8);
     }
 
