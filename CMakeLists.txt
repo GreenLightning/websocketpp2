@@ -27,15 +27,7 @@ set (WEBSOCKETPP_MINOR_VERSION 0)
 set (WEBSOCKETPP_PATCH_VERSION 0)
 set (WEBSOCKETPP_VERSION ${WEBSOCKETPP_MAJOR_VERSION}.${WEBSOCKETPP_MINOR_VERSION}.${WEBSOCKETPP_PATCH_VERSION})
 
-if(POLICY CMP0048)
-  cmake_policy(GET CMP0048 _version_policy)
-endif()
-
-if(_version_allowed STREQUAL NEW)
-  project (websocketpp VERSION ${WEBSOCKETPP_VERSION})
-else()
-  project (websocketpp)
-endif()
+project (websocketpp VERSION ${WEBSOCKETPP_VERSION})
 
 # Require at least C++11, while respecting a newer standard selected by users.
 if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 11 OR CMAKE_CXX_STANDARD EQUAL 98)
@@ -55,14 +47,6 @@ else ()
   set (DEF_INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/websocketpp)
 endif ()
 set (INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
-
-# Make relative paths absolute (needed later on)
-foreach (p INCLUDE CMAKE)
-  set (var INSTALL_${p}_DIR)
-  if (NOT IS_ABSOLUTE "${${var}}")
-    set (${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-  endif ()
-endforeach ()
 
 # Set CMake library search policy
 if (COMMAND cmake_policy)
@@ -122,9 +106,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
         endif()
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        if (NOT APPLE)
-            add_definitions (-DNDEBUG -Wall -Wcast-align) # todo: should we use CMAKE_C_FLAGS for these?
-        endif ()
+        add_compile_options (-Wall -Wcast-align -Wshadow -Wunused-parameter)
     endif ()
 
     # clang
@@ -137,14 +119,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
             set (WEBSOCKETPP_PLATFORM_LIBS pthread rt)
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        if (NOT APPLE)
-            add_definitions (-DNDEBUG -Wall -Wno-padded) # todo: should we use CMAKE_C_FLAGS for these?
-        endif ()
-    endif ()
-
-    # OSX, can override above.
-    if (APPLE)
-        add_definitions (-DNDEBUG -Wall)
+        add_compile_options (-Wall -Wno-padded -Wshadow -Wunused-parameter -Wsometimes-uninitialized -Wuninitialized)
     endif ()
 
     if (BUILD_TESTS)
@@ -203,7 +178,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
 
     if (Boost_FOUND)
         # Boost is a project wide global dependency.
-        include_directories (${Boost_INCLUDE_DIRS})
+        include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
         link_directories (${Boost_LIBRARY_DIRS})
 
         # Pretty print status
