@@ -13,35 +13,22 @@
 #include <websocketpp/transport/asio/security/none.hpp>
 #include <websocketpp/transport/asio/security/tls.hpp>
 
-template <typename base>
-struct dummy_con : public base {
-	websocketpp::lib::error_code test() {
-		return this->translate_ec(websocketpp::lib::asio::error_code());
-	}
-};
+static_assert(websocketpp::lib::is_same<websocketpp::lib::error_code,
+    websocketpp::lib::asio::error_code>::value,
+    "WebSocket++ errors must match the selected Asio backend");
 
 BOOST_AUTO_TEST_CASE( translated_ec_none ) {
-    dummy_con<websocketpp::transport::asio::basic_socket::connection> tscon;
-
-	// If the current configuration settings result in the library error type and the asio
-	// error type being the same, then the code should pass through natively. Otherwise
-	// we should get a generic pass through error.
-	if(websocketpp::lib::is_same<websocketpp::lib::error_code,websocketpp::lib::asio::error_code>::value) {
-    	BOOST_CHECK_EQUAL( tscon.test(), websocketpp::lib::error_code() );
-    } else {
-    	BOOST_CHECK_EQUAL( tscon.test(), websocketpp::transport::error::make_error_code(websocketpp::transport::error::pass_through) );
-    }
+    typedef websocketpp::transport::asio::basic_socket::connection socket_type;
+    websocketpp::lib::asio::error_code ec = websocketpp::lib::asio::error::connection_reset;
+    BOOST_CHECK_EQUAL(socket_type::translate_ec(ec), ec);
+    BOOST_CHECK_EQUAL(socket_type::translate_ec(websocketpp::lib::asio::error_code()),
+        websocketpp::lib::error_code());
 }
 
 BOOST_AUTO_TEST_CASE( translated_ec_tls ) {
-    dummy_con<websocketpp::transport::asio::tls_socket::connection> tscon;
-
-	// If the current configuration settings result in the library error type and the asio
-	// error type being the same, then the code should pass through natively. Otherwise
-	// we should get a generic pass through error.
-	if(websocketpp::lib::is_same<websocketpp::lib::error_code,websocketpp::lib::asio::error_code>::value) {
-    	BOOST_CHECK_EQUAL( tscon.test(), websocketpp::lib::error_code() );
-    } else {
-    	BOOST_CHECK_EQUAL( tscon.test(), websocketpp::transport::error::make_error_code(websocketpp::transport::error::pass_through) );
-    }
+    typedef websocketpp::transport::asio::tls_socket::connection socket_type;
+    websocketpp::lib::asio::error_code ec(1, websocketpp::lib::asio::error::get_ssl_category());
+    BOOST_CHECK_EQUAL(socket_type::translate_ec(ec), ec);
+    BOOST_CHECK_EQUAL(socket_type::translate_ec(websocketpp::lib::asio::error_code()),
+        websocketpp::lib::error_code());
 }

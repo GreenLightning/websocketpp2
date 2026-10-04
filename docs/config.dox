@@ -41,7 +41,7 @@ Policies are classes used to allow clean swapping of behavior without changing t
 | Typedef Name              | Effect                                 | Core policies |
 | ------------------------- | -------------------------------------- | ------------- |
 | concurrency_type          | Provides concurrency primitives        | **None** Stub to disable concurrency overhead & dependencies in single threaded environments |
-| ^                         | ^                                      | **Basic** Primities provided by the C++11 STL or Boost.Atomic |
+| ^                         | ^                                      | **Basic** Primities provided by the C++11 standard library |
 | elog_type                 | Provides error logging functionality                      | |
 | alog_type                 | Provides access logging functionality  | |
 | request_type              | Stores and manipulates HTTP requests   | |

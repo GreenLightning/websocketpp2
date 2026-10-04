@@ -9,7 +9,7 @@
 
 namespace websocketpp {
 namespace random {
-/// RNG policy based on std::random_device or boost::random_device
+/// RNG policy based on std::random_device
 namespace random_device {
 
 /// Thread safe non-deterministic random integer generator.

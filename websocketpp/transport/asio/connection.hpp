@@ -356,13 +356,8 @@ public:
      * that the connection was closed or failed. Valid only after the close or
      * fail handler is called.
      *
-     * Primarily used if you are using mismatched asio / system_error
-     * implementations such as `boost::asio` with `std::system_error`. In these
-     * cases the transport error type is different than the library error type
-     * and some WebSocket++ functions that return transport errors via the 
-     * library error code type will be coerced into a catch all `pass_through`
-     * or `tls_error` error. This method will return the original machine 
-     * readable transport error in the native type.
+     * Returns the original transport error in the selected Asio backend's
+     * error type, which also matches lib::error_code.
      *
      * @since 0.7.0
      *

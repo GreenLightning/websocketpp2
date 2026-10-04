@@ -37,6 +37,13 @@ else()
   project (websocketpp)
 endif()
 
+# Require at least C++11, while respecting a newer standard selected by users.
+if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 11 OR CMAKE_CXX_STANDARD EQUAL 98)
+    set (CMAKE_CXX_STANDARD 11)
+endif ()
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_CXX_EXTENSIONS OFF)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(GNUInstallDirs)
@@ -74,7 +81,6 @@ include (CMakeHelpers)
 ############  Build customization
 
 # Override from command line "CMake -D<OPTION>=TRUE/FALSE/0/1/ON/OFF"
-option (ENABLE_CPP11 "Build websocketpp with CPP11 features enabled." TRUE)
 option (BUILD_EXAMPLES "Build websocketpp examples." FALSE)
 option (BUILD_TESTS "Build websocketpp tests." FALSE)
 
@@ -88,33 +94,14 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
     set (WEBSOCKETPP_PLATFORM_TLS_LIBS "")
     set (WEBSOCKETPP_BOOST_LIBS "")
 
-    # VC9 and C++11 reasoning
-    if (ENABLE_CPP11 AND MSVC AND MSVC90)
-        message("* Detected Visual Studio 9 2008, disabling C++11 support.")
-        set (ENABLE_CPP11 FALSE)
-    endif ()
-
     # Detect clang. Not officially reported by cmake.
     execute_process(COMMAND "${CMAKE_CXX_COMPILER}" "-v" ERROR_VARIABLE CXX_VER_STDERR)
     if ("${CXX_VER_STDERR}" MATCHES ".*clang.*")
         set (CMAKE_COMPILER_IS_CLANGXX 1)
     endif ()
 
-    # C++11 defines
-    if (ENABLE_CPP11)
-        if (MSVC)
-            add_definitions (-D_WEBSOCKETPP_CPP11_FUNCTIONAL_)
-            add_definitions (-D_WEBSOCKETPP_CPP11_SYSTEM_ERROR_)
-            add_definitions (-D_WEBSOCKETPP_CPP11_RANDOM_DEVICE_)
-            add_definitions (-D_WEBSOCKETPP_CPP11_MEMORY_)
-        else()
-            add_definitions (-D_WEBSOCKETPP_CPP11_STL_)
-        endif()
-    endif ()
-
     # Visual studio
     if (MSVC)
-        set (WEBSOCKETPP_BOOST_LIBS system thread)
         set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot /Oi /MP /arch:SSE2 /fp:fast")
         set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
         add_definitions (/W3 /wd4996 /wd4995 /wd4355)
@@ -135,17 +122,8 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
         endif()
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        set (WEBSOCKETPP_BOOST_LIBS system thread)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
         if (NOT APPLE)
             add_definitions (-DNDEBUG -Wall -Wcast-align) # todo: should we use CMAKE_C_FLAGS for these?
-        endif ()
-
-        # Try to detect version. Note: Not tested!
-        execute_process (COMMAND ${CMAKE_CXX_COMPILER} "-dumpversion" OUTPUT_VARIABLE GCC_VERSION)
-        if ("${GCC_VERSION}" STRGREATER "4.4.0")
-            message("* C++11 support partially enabled due to GCC version ${GCC_VERSION}")
-            set (WEBSOCKETPP_BOOST_LIBS system thread)
         endif ()
     endif ()
 
@@ -159,8 +137,6 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
             set (WEBSOCKETPP_PLATFORM_LIBS pthread rt)
         endif()
         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
-        set (WEBSOCKETPP_BOOST_LIBS system thread)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
         if (NOT APPLE)
             add_definitions (-DNDEBUG -Wall -Wno-padded) # todo: should we use CMAKE_C_FLAGS for these?
         endif ()
@@ -171,10 +147,6 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
         add_definitions (-DNDEBUG -Wall)
     endif ()
 
-    if (BUILD_EXAMPLES)
-        list (APPEND WEBSOCKETPP_BOOST_LIBS random)
-    endif()
-
     if (BUILD_TESTS)
         list (APPEND WEBSOCKETPP_BOOST_LIBS unit_test_framework)
     endif()
@@ -183,11 +155,8 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
 
     # Set BOOST_ROOT env variable or pass with cmake -DBOOST_ROOT=path.
     # BOOST_ROOT can also be defined by a previous run from cmake cache.
+    # Preserve the legacy environment override for the C++11 Boost build.
     if (NOT "$ENV{BOOST_ROOT_CPP11}" STREQUAL "")
-        # Scons documentation for BOOST_ROOT_CPP11:
-        # "look for optional second boostroot compiled with clang's libc++ STL library
-        # this prevents warnings/errors when linking code built with two different
-        # incompatible STL libraries."
         file (TO_CMAKE_PATH "$ENV{BOOST_ROOT_CPP11}" BOOST_ROOT)
         set (BOOST_ROOT ${BOOST_ROOT} CACHE PATH "BOOST_ROOT dependency path" FORCE)
     endif ()
@@ -221,9 +190,16 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
     set (Boost_FIND_QUIETLY TRUE)
     set (Boost_DEBUG FALSE)
     set (Boost_USE_MULTITHREADED TRUE)
-    set (Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1") # todo: someone who knows better spesify these!
-
-    find_package (Boost 1.39.0 COMPONENTS ${WEBSOCKETPP_BOOST_LIBS})
+    find_package (Boost 1.49.0 COMPONENTS ${WEBSOCKETPP_BOOST_LIBS})
+    # FindBoost before CMake 3.15 provides the version as separate fields.
+    if (NOT DEFINED Boost_VERSION_STRING)
+        set (Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+    endif ()
+    # Boost.System became header-only in Boost 1.69.
+    if (Boost_VERSION_STRING VERSION_LESS "1.69.0")
+        list (APPEND WEBSOCKETPP_BOOST_LIBS system)
+        find_package (Boost 1.49.0 COMPONENTS ${WEBSOCKETPP_BOOST_LIBS})
+    endif ()
 
     if (Boost_FOUND)
         # Boost is a project wide global dependency.

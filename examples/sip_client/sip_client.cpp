@@ -6,7 +6,8 @@
 
 #include <iostream>
 
-#include <boost/thread/thread.hpp>
+#include <websocketpp/common/thread.hpp>
+#include <websocketpp/common/chrono.hpp>
 
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
@@ -73,7 +74,7 @@ int main(int argc, char* argv[]) {
         sip_client.run();
 
         while(!received) {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+            std::this_thread::sleep_for(websocketpp::lib::chrono::milliseconds(100));
         }
 
         std::cout << "done" << std::endl;

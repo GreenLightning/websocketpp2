@@ -1,0 +1,15 @@
+Import('env')
+Import('boostlibs')
+Import('platform_libs')
+
+boost_env = env.Clone()
+standalone_env = env.Clone()
+standalone_env.Append(CPPDEFINES = ['ASIO_STANDALONE'])
+
+prgs = boost_env.Program('test_common_boost', ['compatibility.cpp'],
+    LIBS = boostlibs(['system'], boost_env) + [platform_libs])
+standalone_obj = standalone_env.Object('compatibility_standalone.o', ['compatibility.cpp'])
+prgs += standalone_env.Program('test_common_standalone', standalone_obj,
+    LIBS = [platform_libs])
+
+Return('prgs')

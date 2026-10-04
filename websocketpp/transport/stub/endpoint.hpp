@@ -105,7 +105,7 @@ protected:
     /**
      * Server roles only
      */
-    void async_accept(transport_con_ptr tcon, accept_handler cb, std::error_code & ec) {
+    void async_accept(transport_con_ptr tcon, accept_handler cb, lib::error_code & ec) {
         ec = make_error_code(error::not_implemented);
     }
 

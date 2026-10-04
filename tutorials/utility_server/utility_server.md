@@ -82,9 +82,9 @@ The final line, `m_endpoint.run();`, will block until the endpoint is instructed
 #### Build
 Adding WebSocket++ has added a few dependencies to our program that must be addressed in the build system. Firstly, the WebSocket++ library headers need must be in the include search path of your build system. How exactly this is done depends on where you have the WebSocket++ headers installed what build system you are using.
 
-For the rest of this tutorial we are going to assume a C++11 build environment. WebSocket++ will work with pre-C++11 systems if your build system has access to a recent version of the Boost library headers.
+WebSocket++ requires a C++11 build environment or later.
 
-Finally, to use the Asio transport config we need to bring in the Asio library. There are two options here. If you have access to a C++11 build environment the standalone version from http://think-async.com is a good option. This header only library does not bring in any special dependencies and ensures you have the latest version of Asio. If you do not have a C++11 build environment or already have brought in the Boost libraries you can also use the version of Asio bundled with Boost.
+Finally, to use the Asio transport config we need to bring in the Asio library. There are two options here. The standalone version from http://think-async.com is one option. This header only library does not bring in any special dependencies and ensures you have the latest version of Asio. You can also use the version of Asio bundled with Boost.
 
 To use standalone Asio, make sure the Asio headers are in your include path and define ASIO_STANDALONE. To use Boost Asio, make sure the Boost headers are in your include path and that you are linking to the boost_system library.
 

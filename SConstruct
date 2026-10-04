@@ -1,5 +1,4 @@
 import os, sys, SCons.Errors
-from subprocess import check_output
 
 env = Environment(ENV = os.environ)
 
@@ -41,11 +40,6 @@ if 'OPENSSL_PATH' in os.environ:
    env.Append(CPPPATH = os.path.join(os.environ['OPENSSL_PATH'], 'include'))
    env.Append(LIBPATH = os.environ['OPENSSL_PATH'])
 
-if 'WSPP_ENABLE_CPP11' in os.environ:
-   env['WSPP_ENABLE_CPP11'] = True
-else:
-   env['WSPP_ENABLE_CPP11'] = False
-
 boost_linkshared = False
 
 def boostlibs(libnames,localenv):
@@ -69,9 +63,7 @@ if env['PLATFORM'].startswith('win'):
                             '_WIN32_WINNT=0x0600',
                             '_CONSOLE',
                             'BOOST_TEST_DYN_LINK',
-                            'NOMINMAX',
-                            '_WEBSOCKETPP_CPP11_MEMORY_',
-                            '_WEBSOCKETPP_CPP11_FUNCTIONAL_'])
+                            'NOMINMAX'])
    arch_flags  = '/arch:SSE2'
    opt_flags   = '/Ox /Oi /fp:fast'
    warn_flags  = '/W3 /wd4996 /wd4995 /wd4355'
@@ -152,36 +144,10 @@ elif env['PLATFORM'].startswith('win'):
 ## Append WebSocket++ path
 env.Append(CPPPATH = ['#'])
 
-##### Set up C++11 environment
-polyfill_libs = [] # boost libraries used as drop in replacements for incomplete
-                   # C++11 STL implementations
-env_cpp11 = env.Clone ()
-
-if env_cpp11['CXX'].startswith('g++'):
-   # TODO: check g++ version
-   GCC_VERSION = check_output([env_cpp11['CXX'], '-dumpversion']).decode("utf-8")
-
-   if GCC_VERSION > "4.4.0":
-      print("C++11 build environment partially enabled")
-      env_cpp11.Append(WSPP_CPP11_ENABLED = "true",CXXFLAGS = ['-std=c++0x'],TOOLSET = ['g++'],CPPDEFINES = ['_WEBSOCKETPP_CPP11_STL_'])
-   else:
-      print("C++11 build environment is not supported on this version of G++")
-elif env_cpp11['CXX'].startswith('clang++'):
-   print("C++11 build environment enabled")
-   env.Append(CXXFLAGS = ['-stdlib=libc++'],LINKFLAGS=['-stdlib=libc++'])
-   env_cpp11.Append(WSPP_CPP11_ENABLED = "true",CXXFLAGS = ['-std=c++0x','-stdlib=libc++'],LINKFLAGS = ['-stdlib=libc++'],TOOLSET = ['clang++'],CPPDEFINES = ['_WEBSOCKETPP_CPP11_STL_'])
-
-   # look for optional second boostroot compiled with clang's libc++ STL library
-   # this prevents warnings/errors when linking code built with two different
-   # incompatible STL libraries.
-   if 'BOOST_ROOT_CPP11' in os.environ:
-      env_cpp11['BOOST_INCLUDES'] = os.environ['BOOST_ROOT_CPP11']
-      env_cpp11['BOOST_LIBS'] = os.path.join(os.environ['BOOST_ROOT_CPP11'], 'stage', 'lib')
-   elif 'BOOST_INCLUDES_CPP11' in os.environ and 'BOOST_LIBS_CPP11' in os.environ:
-      env_cpp11['BOOST_INCLUDES'] = os.environ['BOOST_INCLUDES_CPP11']
-      env_cpp11['BOOST_LIBS'] = os.environ['BOOST_LIBS_CPP11']
-else:
-   print("C++11 build environment disabled")
+# WebSocket++ requires C++11 on every supported build.
+if not env['PLATFORM'].startswith('win'):
+   if not any(flag.startswith('-std=') for flag in env.get('CXXFLAGS', [])):
+      env.Append(CXXFLAGS = ['-std=c++11'])
 
 # if the build system is known to allow the isystem modifier for library include
 # values then use it for the boost libraries. Otherwise just add them to the
@@ -192,26 +158,15 @@ else:
     env.Append(CPPPATH = [env['BOOST_INCLUDES']])
 env.Append(LIBPATH = [env['BOOST_LIBS']])
 
-# if the build system is known to allow the isystem modifier for library include
-# values then use it for the boost libraries. Otherwise just add them to the
-# regular CPPPATH values.
-if env_cpp11['CXX'].startswith('g++') or env_cpp11['CXX'].startswith('clang'):
-    env_cpp11.Append(CPPFLAGS = '-isystem ' + env_cpp11['BOOST_INCLUDES'])
-else:
-    env_cpp11.Append(CPPPATH = [env_cpp11['BOOST_INCLUDES']])
-env_cpp11.Append(LIBPATH = [env_cpp11['BOOST_LIBS']])
-
 releasedir = 'build/release/'
 debugdir = 'build/debug/'
 testdir = 'build/test/'
 builddir = releasedir
 
 Export('env')
-Export('env_cpp11')
 Export('platform_libs')
 Export('boostlibs')
 Export('tls_libs')
-Export('polyfill_libs')
 
 ## END OF CONFIG !!
 
@@ -219,7 +174,7 @@ Export('polyfill_libs')
 
 if not env['PLATFORM'].startswith('win'):
     # Unit tests, add test folders with SConscript files to to_test list.
-    to_test = ['utility','http','logger','random','processors','message_buffer','extension','transport/iostream','transport/asio','roles','endpoint','connection','transport'] #,'http','processors','connection'
+    to_test = ['common','utility','http','logger','random','processors','message_buffer','extension','transport/iostream','transport/asio','roles','endpoint','connection','transport'] #,'http','processors','connection'
 
     for t in to_test:
        new_tests = SConscript('#/test/'+t+'/SConscript',variant_dir = testdir + t, duplicate = 0)

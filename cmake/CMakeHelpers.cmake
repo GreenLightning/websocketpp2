@@ -2,7 +2,7 @@
 # Print build configuration
 macro (print_used_build_config)
     message ("\n=========== Used Build Configuration =============\n")
-    message (STATUS "ENABLE_CPP11        = " ${ENABLE_CPP11})
+    message (STATUS "CMAKE_CXX_STANDARD  = " ${CMAKE_CXX_STANDARD})
     message (STATUS "BUILD_EXAMPLES      = " ${BUILD_EXAMPLES})
     message (STATUS "BUILD_TESTS         = " ${BUILD_TESTS})
     message ("")

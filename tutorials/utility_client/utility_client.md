@@ -119,11 +119,9 @@ _Create endpoint wrapper object that handles initialization and setting up the b
 In order to process user input while network processing occurs in the background we are going to use a separate thread for the WebSocket++ processing loop. This leaves the main thread free to process foreground user input. In order to enable simple RAII style resource management for our thread and endpoint we will use a wrapper object that configures them both in its constructor.
 
 > ##### Terminology: websocketpp::lib namespace
-> WebSocket++ is designed to be used with a C++11 standard library. As this is not universally available in popular build systems the Boost libraries may be used as polyfills for the C++11 standard library in C++98 build environments. The `websocketpp::lib` namespace is used by the library and its associated examples to abstract away the distinctions between the two. `websocketpp::lib::shared_ptr` will evaluate to `std::shared_ptr` in a C++11 environment and `boost::shared_ptr` otherwise.
+> WebSocket++ requires C++11 or later. The `websocketpp::lib` namespace retains compatibility aliases for standard-library types, so `websocketpp::lib::shared_ptr` is always `std::shared_ptr`. Applications may use either spelling.
 >
-> This tutorial uses the `websocketpp::lib` wrappers because it doesn't know what the build environment of the reader is. For your applications, unless you are interested in similar portability, are free to use the boost or std versions of these types directly.
->
->[TODO: link to more information about websocketpp::lib namespace and C++11 setup]
+> Error types follow the Asio backend: `websocketpp::lib::error_code` is `std::error_code` with `ASIO_STANDALONE` defined and `boost::system::error_code` otherwise.
 
 Within the `websocket_endpoint` constructor several things happen:
 
@@ -146,19 +144,13 @@ m_thread.reset(new websocketpp::lib::thread(&client::run, &m_endpoint));
 
 #### Build
 
-Now that our client endpoint template is actually instantiated a few more linker dependencies will show up. In particular, WebSocket clients require a cryptographically secure random number generator. WebSocket++ is able to use either `boost_random` or the C++11 standard library <random> for this purpose. Because this example also uses threads, if we do not have C++11 std::thread available we will need to include `boost_thread`.
-
-##### Clang (C++98 & boost)
-`clang++ step3.cpp -lboost_system -lboost_random -lboost_thread`
+This example uses the C++11 `<random>` and `<thread>` libraries. Compile in C++11 mode or later and enable your platform's standard threading support. When using Boost.Asio, link Boost.System if your Boost version requires it.
 
 ##### Clang (C++11)
-`clang++ -std=c++0x -stdlib=libc++ step3.cpp -lboost_system -D_WEBSOCKETPP_CPP11_STL_`
+`clang++ -std=c++11 -pthread step3.cpp -lboost_system`
 
-##### G++ (C++98 & Boost)
-`g++ step3.cpp -lboost_system -lboost_random -lboost_thread`
-
-##### G++ v4.6+ (C++11)
-`g++ -std=c++0x step3.cpp -lboost_system -D_WEBSOCKETPP_CPP11_STL_`
+##### G++ (C++11)
+`g++ -std=c++11 -pthread step3.cpp -lboost_system`
 
 #### Code so far
 
@@ -257,7 +249,7 @@ A new WebSocket connection is initiated via a three step process. First, a conne
 `websocket_endpoint::connect()` begins by calling `endpoint::get_connection()` using a uri passed as a parameter. Additionally, an error output value is passed to capture any errors that might occur during. If an error does occur an error notice is printed along with a descriptive message and the -1 / 'invalid' value is returned as the new ID.
 
 > ###### Terminology: `error handling: exceptions vs error_code`
-> WebSocket++ uses the error code system defined by the C++11 `<system_error>` library. It can optionally fall back to a similar system provided by the Boost libraries. All user facing endpoint methods that can fail take an `error_code` in an output parameter and store the error that occured there before returning. An empty/default constructed value is returned in the case of success.
+> WebSocket++ uses `std::error_code` with standalone Asio and `boost::system::error_code` with Boost.Asio. Use `websocketpp::lib::error_code` to match the selected backend. All user facing endpoint methods that can fail take an `error_code` in an output parameter and store the error that occured there before returning. An empty/default constructed value is returned in the case of success.
 >
 > **Exception throwing varients**
 > All user facing endpoint methods that take and use an `error_code` parameter have a version that throws an exception instead. These methods are identical in function and signature except for the lack of the final ec parameter. The type of the exception thrown is `websocketpp::exception`. This type derives from `std::exception` so it can be caught by catch blocks grabbing generic `std::exception`s. The `websocketpp::exception::code()` method may be used to extract the machine readable `error_code` value from an exception.

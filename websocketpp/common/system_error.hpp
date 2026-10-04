@@ -5,29 +5,11 @@
 #ifndef WEBSOCKETPP_COMMON_SYSTEM_ERROR_HPP
 #define WEBSOCKETPP_COMMON_SYSTEM_ERROR_HPP
 
-
 #include <websocketpp/common/cpp11.hpp>
 
-// If we've determined that we're in full C++11 mode and the user hasn't
-// explicitly disabled the use of C++11 system_error header, then prefer it to
-// boost.
-#if defined _WEBSOCKETPP_CPP11_INTERNAL_ && !defined _WEBSOCKETPP_NO_CPP11_SYSTEM_ERROR_
-    #ifndef _WEBSOCKETPP_CPP11_SYSTEM_ERROR_
-        #define _WEBSOCKETPP_CPP11_SYSTEM_ERROR_
-    #endif
-#endif
-
-// If we're on Visual Studio 2010 or higher and haven't explicitly disabled
-// the use of C++11 system_error header then prefer it to boost.
-#if defined(_MSC_VER) && _MSC_VER >= 1600 && !defined _WEBSOCKETPP_NO_CPP11_SYSTEM_ERROR_
-    #ifndef _WEBSOCKETPP_CPP11_SYSTEM_ERROR_
-        #define _WEBSOCKETPP_CPP11_SYSTEM_ERROR_
-    #endif
-#endif
-
-
-
-#ifdef _WEBSOCKETPP_CPP11_SYSTEM_ERROR_
+// Error codes and their categories must use the same implementation as the
+// selected Asio backend, independently of the former C++11 feature defines.
+#ifdef ASIO_STANDALONE
     #include <system_error>
 #else
     #include <boost/system/error_code.hpp>
@@ -37,7 +19,7 @@
 namespace websocketpp {
 namespace lib {
 
-#ifdef _WEBSOCKETPP_CPP11_SYSTEM_ERROR_
+#ifdef ASIO_STANDALONE
     using std::errc;
     using std::error_code;
     using std::error_category;

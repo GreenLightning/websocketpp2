@@ -5,9 +5,6 @@
 #include <iostream>
 #include <set>
 
-/*#include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition_variable.hpp>*/
 #include <websocketpp/common/thread.hpp>
 
 typedef websocketpp::server<websocketpp::config::asio> server;

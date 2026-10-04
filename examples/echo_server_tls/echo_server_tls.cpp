@@ -6,9 +6,9 @@
   * NOTES
   *
   * This example uses a number of standard classes through the websocketpp::lib
-  * namespace. This is to allow easy switching between Boost, the C++11 STL, and 
-  * the standalone Asio library. Your program need not use these namespaces if
-  * you do not need this sort of flexibility.
+  * namespace. These aliases use C++11 standard-library types, while error
+  * types follow the selected Asio backend. Your program may also use the
+  * corresponding standard-library types directly.
   */
 
 #include <websocketpp/config/asio.hpp>
