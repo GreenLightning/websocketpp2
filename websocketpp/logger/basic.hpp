@@ -18,7 +18,7 @@
 
 #include <websocketpp/logger/levels.hpp>
 
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/stdint.hpp>
 #include <websocketpp/common/time.hpp>
 
@@ -66,12 +66,9 @@ public:
      , m_out(other.m_out)
     {}
     
-#ifdef _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
     // no copy assignment operator because of const member variables
     basic<concurrency,names> & operator=(basic<concurrency,names> const &) = delete;
-#endif // _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
     /// Move constructor
     basic(basic<concurrency,names> && other)
      : m_static_channels(other.m_static_channels)
@@ -79,12 +76,8 @@ public:
      , m_out(other.m_out)
     {}
 
-#ifdef _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
     // no move assignment operator because of const member variables
     basic<concurrency,names> & operator=(basic<concurrency,names> &&) = delete;
-#endif // _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
-
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_
 
     void set_ostream(std::ostream * out = &std::cout) {
         m_out = out;
@@ -133,7 +126,7 @@ public:
         m_out->flush();
     }
 
-    _WEBSOCKETPP_CONSTEXPR_TOKEN_ bool static_test(level channel) const {
+    constexpr bool static_test(level channel) const {
         return ((channel & m_static_channels) != 0);
     }
 
@@ -155,13 +148,7 @@ private:
     static std::ostream & timestamp(std::ostream & os) {
         std::time_t t = std::time(NULL);
         std::tm lt = lib::localtime(t);
-        #ifdef _WEBSOCKETPP_PUTTIME_
-            return os << std::put_time(&lt,"%Y-%m-%d %H:%M:%S");
-        #else // Falls back to strftime, which requires a temporary copy of the string.
-            char buffer[20];
-            size_t result = std::strftime(buffer,sizeof(buffer),"%Y-%m-%d %H:%M:%S",&lt);
-            return os << (result == 0 ? "Unknown" : buffer);
-        #endif
+        return os << std::put_time(&lt,"%Y-%m-%d %H:%M:%S");
     }
 
     level const m_static_channels;

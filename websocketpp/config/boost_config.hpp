@@ -5,4 +5,4 @@
 // Retained for source compatibility. C++11 no longer needs Boost.Config.
 #pragma once
 
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>

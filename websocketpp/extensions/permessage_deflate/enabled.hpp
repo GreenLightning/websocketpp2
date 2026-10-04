@@ -5,7 +5,6 @@
 #pragma once
 
 
-#include <websocketpp/common/cpp11.hpp>
 #include <websocketpp/common/memory.hpp>
 #include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/stdint.hpp>
@@ -100,7 +99,7 @@ class category : public lib::error_category {
 public:
     category() {}
 
-    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
+    char const * name() const noexcept {
         return "websocketpp.extension.permessage-deflate";
     }
 

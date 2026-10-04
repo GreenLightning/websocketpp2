@@ -63,6 +63,12 @@ When upgrading:
   `websocketpp::websocketpp` CMake target propagates this minimum requirement
   for both source-tree and installed consumers, while preserving newer standards.
   The optional `ENABLE_CPP11` and `WSPP_ENABLE_CPP11` settings have been removed.
+* Replace `_WEBSOCKETPP_NOEXCEPT_TOKEN_`, `_WEBSOCKETPP_CONSTEXPR_TOKEN_`, and
+  `_WEBSOCKETPP_NULLPTR_TOKEN_` with `noexcept`, `constexpr`, and `nullptr`.
+  The C++11 feature macros have been removed; move semantics, deleted functions,
+  initializer lists, and `std::put_time` are now used unconditionally.
+  Replace direct includes of `websocketpp/common/cpp11.hpp` with
+  `websocketpp/common/platforms.hpp`, which now checks compiler requirements.
 * Replace Boost pointers, callbacks, threads, and other standard-library
   substitutes passed to WebSocket++ with `std::` types or `websocketpp::lib`
   aliases. The `_WEBSOCKETPP_NO_CPP11_*` switches no longer select Boost types.

@@ -14,7 +14,7 @@
 #include <websocketpp/http/constants.hpp>
 
 #include <websocketpp/common/connection_hdl.hpp>
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/functional.hpp>
 
 #include <queue>
@@ -131,15 +131,8 @@ typedef lib::function<void(lib::error_code const & ec, size_t bytes_transferred)
 typedef lib::function<void(lib::error_code const & ec)> write_frame_handler;
 
 // RFC6455 is the only supported WebSocket protocol version.
-#ifdef _WEBSOCKETPP_INITIALIZER_LISTS_ // simplified C++11 version
-    /// Container that stores the list of protocol versions supported
-    static std::vector<int> const versions_supported = {13};
-#else
-    /// Helper array to get around lack of initializer lists pre C++11
-    static int const helper[] = {13};
-    /// Container that stores the list of protocol versions supported
-    static std::vector<int> const versions_supported(helper,helper+1);
-#endif
+/// Container that stores the list of protocol versions supported
+static std::vector<int> const versions_supported = {13};
 
 namespace session {
 namespace state {
@@ -1077,7 +1070,6 @@ public:
     void set_body(std::string const & value);
 #endif // _WEBSOCKETPP_NO_EXCEPTIONS_
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
     /// @copydoc websocketpp::connection::set_body(std::string const &, lib::error_code &)
     void set_body(std::string && value, lib::error_code & ec);
 
@@ -1085,7 +1077,6 @@ public:
     /// @copydoc websocketpp::connection::set_body(std::string const &)
     void set_body(std::string && value);
 #endif // _WEBSOCKETPP_NO_EXCEPTIONS_
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_
 
     /// Append a header (exception free)
     /**

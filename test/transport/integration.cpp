@@ -731,10 +731,8 @@ BOOST_AUTO_TEST_CASE( normal_close_cancels_pending_pong_timeout ) {
     BOOST_CHECK_EQUAL(con->get_remote_close_code(), websocketpp::close::status::normal);
 }
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 BOOST_AUTO_TEST_CASE( move_construct_transport ) {
     server s1;
     
     server s2(std::move(s1));
 }
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_

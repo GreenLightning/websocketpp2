@@ -72,7 +72,6 @@ BOOST_AUTO_TEST_CASE( copy_constructor ) {
     BOOST_CHECK( out.str().size() > 0 );
 }
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 BOOST_AUTO_TEST_CASE( move_constructor ) {
     std::stringstream out;
 
@@ -104,7 +103,6 @@ BOOST_AUTO_TEST_CASE( move_constructor ) {
     BOOST_CHECK( out1.str().size() > 0 );
     BOOST_CHECK( out2.str().size() > 0 );
 }*/
-#endif // #ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 
 // As long as there are const member variables these can't exist
 // These remain commented as they are useful for testing the deleted operators

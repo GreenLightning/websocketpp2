@@ -14,7 +14,6 @@ BOOST_AUTO_TEST_CASE( construct_server_asio_tls ) {
     websocketpp::server<websocketpp::config::asio_tls> s;
 }
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 /*
 // temporary disable because library doesn't pass
 BOOST_AUTO_TEST_CASE( emplace ) {
@@ -34,5 +33,3 @@ BOOST_AUTO_TEST_CASE( emplace ) {
     BOOST_CHECK( out1.str().size() > 0 );
     BOOST_CHECK( out2.str().size() > 0 );
 }*/
-
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_

@@ -78,14 +78,11 @@ BOOST_AUTO_TEST_CASE( listen_invalid_host_service ) {
     BOOST_CHECK(!s.is_listening());
 }
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 BOOST_AUTO_TEST_CASE( move_construct_server_core ) {
     websocketpp::server<websocketpp::config::core> s1;
     
     websocketpp::server<websocketpp::config::core> s2(std::move(s1));
 }
-
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_
 
 struct endpoint_extension {
     endpoint_extension() : extension_value(5) {}

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 
 // Error codes and their categories must use the same implementation as the
 // selected Asio backend, independently of the former C++11 feature defines.

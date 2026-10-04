@@ -7,7 +7,7 @@
 
 
 // Non-Policy common stuff
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/stdint.hpp>
 
 // Concurrency

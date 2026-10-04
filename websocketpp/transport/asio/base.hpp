@@ -5,7 +5,7 @@
 #pragma once
 
 #include <websocketpp/common/asio.hpp>
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/functional.hpp>
 #include <websocketpp/common/system_error.hpp>
 #include <websocketpp/common/type_traits.hpp>
@@ -34,10 +34,8 @@ public:
     
     handler_allocator() : m_in_use(false) {}
 
-#ifdef _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
 	handler_allocator(handler_allocator const & cpy) = delete;
 	handler_allocator & operator =(handler_allocator const &) = delete;
-#endif
 
     void * allocate(std::size_t memsize) {
         if (!m_in_use && memsize < size) {
@@ -201,7 +199,7 @@ enum value {
 /// Asio transport error category
 class category : public lib::error_category {
 public:
-    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
+    char const * name() const noexcept {
         return "websocketpp.transport.asio";
     }
 

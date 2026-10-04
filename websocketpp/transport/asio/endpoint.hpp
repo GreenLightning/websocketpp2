@@ -94,19 +94,9 @@ public:
     }
 
     /// transport::asio objects are moveable but not copyable or assignable.
-    /// The following code sets this situation up based on whether or not we
-    /// have C++11 support or not
-#ifdef _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
     endpoint(const endpoint & src) = delete;
     endpoint& operator= (const endpoint & rhs) = delete;
-#else
-private:
-    endpoint(const endpoint & src);
-    endpoint & operator= (const endpoint & rhs);
-public:
-#endif // _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
     endpoint (endpoint && src)
       : config::socket_type(std::move(src))
       , m_tcp_pre_init_handler(src.m_tcp_pre_init_handler)
@@ -145,7 +135,6 @@ public:
         }
         return *this;
     }*/
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_
 
     /// Return whether or not the endpoint produces secure connections.
     bool is_secure() const {

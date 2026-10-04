@@ -4,5 +4,5 @@
 
 #pragma once
 
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <stdint.h>

@@ -17,7 +17,7 @@
 
 #include <websocketpp/common/asio.hpp>
 #include <websocketpp/common/chrono.hpp>
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/memory.hpp>
 #include <websocketpp/common/functional.hpp>
 #include <websocketpp/common/connection_hdl.hpp>

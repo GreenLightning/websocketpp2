@@ -595,7 +595,6 @@ void connection<config>::set_body(std::string const & value) {
 }
 #endif // _WEBSOCKETPP_NO_EXCEPTIONS_
 
-#ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
 template <typename config>
 void connection<config>::set_body(std::string && value,
     lib::error_code & ec)
@@ -618,7 +617,6 @@ void connection<config>::set_body(std::string && value) {
     }
 }
 #endif // _WEBSOCKETPP_NO_EXCEPTIONS_
-#endif // _WEBSOCKETPP_MOVE_SEMANTICS_
 
 template <typename config>
 void connection<config>::append_header(std::string const & key,

@@ -8,7 +8,7 @@
 #include <websocketpp/common/memory.hpp>
 #include <websocketpp/common/functional.hpp>
 #include <websocketpp/common/system_error.hpp>
-#include <websocketpp/common/cpp11.hpp>
+#include <websocketpp/common/platforms.hpp>
 #include <websocketpp/common/connection_hdl.hpp>
 
 #include <string>
@@ -85,7 +85,7 @@ namespace error {
 /// Error category related to asio transport socket policies
 class socket_category : public lib::error_category {
 public:
-    char const * name() const _WEBSOCKETPP_NOEXCEPT_TOKEN_ {
+    char const * name() const noexcept {
         return "websocketpp.transport.asio.socket";
     }
 
