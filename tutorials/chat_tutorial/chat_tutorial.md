@@ -1,4 +1,4 @@
-Chat Tutorial
+Chat Tutorial {#chat_tutorial}
 =============
 
 Goals of this tutorial:

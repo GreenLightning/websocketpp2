@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebSocket++ – C++ WebSocket client/server library</title>
+  <meta name="description" content="WebSocket++ is a header only C++11 library that implements RFC 6455, the WebSocket protocol, for clients and servers.">
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 48rem; margin: 3rem auto; padding: 0 1rem; }
+    h1 { font-size: 2.2rem; margin-bottom: .25rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.5rem; }
+    p, li { line-height: 1.5; }
+    a { color: light-dark(#1d4ed8, #93c5fd); }
+    .tagline { font-size: 1.15rem; margin-top: 0; opacity: .8; }
+    nav { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.5rem 0; }
+    nav a { padding: .65rem 1rem; border: 1px solid #8888; border-radius: .4rem; text-decoration: none; font-weight: 600; }
+    nav a:hover { background: #8882; }
+    pre { padding: .75rem; border: 1px solid #8888; border-radius: .4rem; overflow: auto; }
+    pre, code { font: .9rem ui-monospace, monospace; }
+    table { border-collapse: collapse; }
+    th, td { text-align: left; padding: .4rem 1rem .4rem 0; border-bottom: 1px solid #8884; }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #8884; font-size: .9rem; opacity: .8; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket++</h1>
+  <p class="tagline">A header only C++ library that implements RFC 6455, the WebSocket protocol.</p>
+
+  <nav>
+    <a href="docs/getting_started.html">Getting started</a>
+    <a href="docs/index.html">Manual</a>
+    <a href="docs/annotated.html">API reference</a>
+    <a href="https://github.com/GreenLightning/websocketpp2">GitHub</a>
+  </nav>
+
+  <p>WebSocket++ allows integrating WebSocket client and server functionality
+    into C++ programs. This is a fork and continuation of the original (now
+    mostly inactive) <a href="https://github.com/zaphoyd/websocketpp">websocketpp</a>
+    project. The goal is to modernize and evolve the library while providing a
+    straightforward upgrade path for existing users.</p>
+
+  <h2>Features</h2>
+  <ul>
+    <li>Full support for RFC 6455 (WebSocket version 13)</li>
+    <li>Message/event based interface</li>
+    <li>Secure WebSockets (TLS), IPv6 and explicit proxies</li>
+    <li>Interchangeable network transport modules (raw, iostream, Asio, or custom)</li>
+    <li>Works with standalone Asio and with Boost.Asio</li>
+    <li>Portable (Posix/Windows) and thread-safe</li>
+  </ul>
+
+  <h2>Example</h2>
+  <p>An echo server that listens on port 9002:</p>
+<pre><code>#include &lt;websocketpp/config/asio_no_tls.hpp&gt;
+#include &lt;websocketpp/server.hpp&gt;
+
+typedef websocketpp::server&lt;websocketpp::config::asio&gt; server;
+
+int main() {
+    server echo;
+    echo.set_message_handler([&amp;echo](websocketpp::connection_hdl hdl, server::message_ptr msg) {
+        echo.send(hdl, msg-&gt;get_payload(), msg-&gt;get_opcode());
+    });
+    echo.init_asio();
+    echo.listen(9002);
+    echo.start_accept();
+    echo.run();
+}</code></pre>
+  <p>To talk to it, open the <a href="browser_client/">browser client</a> and
+    connect to <code>ws://localhost:9002</code>. More programs are in the
+    <a href="https://github.com/GreenLightning/websocketpp2/tree/master/examples">examples</a>
+    directory, and two of them are explained step by step in the
+    <a href="docs/tutorials.html">tutorials</a>.</p>
+
+  <h2>Requirements</h2>
+  <p>A C++11 compiler and standard library. The Asio transport additionally
+    needs one of the following (the iostream and raw transports need neither):</p>
+  <table>
+    <tr><th>Backend</th><th>Selection</th><th>Minimum version</th></tr>
+    <tr><td>Standalone Asio</td><td>Define <code>ASIO_STANDALONE</code></td><td>Asio 1.12.0</td></tr>
+    <tr><td>Boost.Asio</td><td>Leave <code>ASIO_STANDALONE</code> undefined</td><td>Boost 1.66.0</td></tr>
+  </table>
+  <p>These minimum versions, GCC, Clang and MSVC are built and tested on every
+    change by <a href="https://github.com/GreenLightning/websocketpp2/actions/workflows/ci.yml">GitHub Actions</a>.</p>
+
+  <h2>Using it with CMake</h2>
+<pre><code>find_package(websocketpp CONFIG REQUIRED)
+target_link_libraries(my_program PRIVATE websocketpp::websocketpp)</code></pre>
+  <p>The target supplies the headers and the C++11 requirement. Applications
+    select and link their own transport dependencies.</p>
+
+  <footer>
+    WebSocket++ is released under the
+    <a href="https://github.com/GreenLightning/websocketpp2/blob/master/LICENSE.txt">BSD 3-Clause license</a>.
+    Originally written by Peter Thorson.
+  </footer>
+</body>
+</html>

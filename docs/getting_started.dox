@@ -1,7 +1,7 @@
 /** \page getting_started Getting Started
 
-WebSocket++ code is available on github at https://github.com/zaphoyd/websocketpp
-The official project homepage lives at http://www.zaphoyd.com/websocketpp
+WebSocket++ code is available on GitHub at https://github.com/GreenLightning/websocketpp2
+The project website lives at https://greenlightning.github.io/websocketpp2/
 
 The git repository is organized into several directories:
 
@@ -15,13 +15,13 @@ WebSocket++ is a header only library. You can start using it by including the we
 
 WebSocket++ includes scripts requiring CMake 3.18 or later for building the examples and unit tests. CMake is not needed unless you want to build tests or examples in an automated fashion.
 
-__Usage questions__ should be posted to the project mailing list at http://groups.google.com/group/websocketpp/ or the IRC channel (\#websocketpp on freenode).
+To build the examples and tests with standalone Asio instead of Boost.Asio, pass `-DASIO_STANDALONE=ON` to CMake (and `-DASIO_ROOT=<path>` if the Asio headers are not in a default location).
 
-__Bugs and issues__ should be posted to the project GitHub issues queue: https://github.com/zaphoyd/websocketpp/issues.
+__Bugs and issues__ should be posted to the project GitHub issues queue: https://github.com/GreenLightning/websocketpp2/issues.
 
-__Pull requests__ on GitHub are welcome. Please make them against the `develop` branch.
+__Pull requests__ on GitHub are welcome. Please make them against the `master` branch. Every pull request is built and tested with GCC, Clang and MSVC, with standalone Asio, and with the oldest supported Boost and Asio versions.
 
-WebSocket++ is written and maintained by Peter Thorson. You can contact me via GitHub messaging, IRC, or via email at websocket@zaphoyd.com.
+WebSocket++ was written by Peter Thorson. This fork continues the original (now mostly inactive) project at https://github.com/zaphoyd/websocketpp.
 
 */
 
