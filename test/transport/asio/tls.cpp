@@ -177,7 +177,9 @@ BOOST_AUTO_TEST_CASE( tls_echo_with_certificate_verification ) {
 
 BOOST_AUTO_TEST_CASE( tls_rejects_untrusted_certificate ) {
     tls_pair pair(false);
-    test_support::deadline deadline(pair.io);
+    // With Asio 1.12 (Boost 1.66) the server only notices the rejected
+    // handshake when a 5 second transport timeout fires, so wait longer.
+    test_support::deadline deadline(pair.io, std::chrono::seconds(10));
     int opens = 0;
     int messages = 0;
     int client_failures = 0;
