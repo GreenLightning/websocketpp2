@@ -811,3 +811,28 @@ BOOST_AUTO_TEST_CASE( queued_pong_timeout_is_ignored_after_close ) {
     con->handle_pong_timeout("closed", websocketpp::lib::error_code());
     BOOST_CHECK_EQUAL(timeouts, 1);
 }
+
+BOOST_AUTO_TEST_CASE( origin_is_available_without_websocket_processor ) {
+    server endpoint;
+    endpoint.clear_access_channels(websocketpp::log::alevel::all);
+    endpoint.clear_error_channels(websocketpp::log::elevel::all);
+    websocketpp::lib::error_code creation_ec;
+    auto con = endpoint.get_connection(creation_ec);
+    BOOST_REQUIRE(!creation_ec);
+    BOOST_CHECK(con->get_origin().empty());
+    std::stringstream output;
+    con->register_ostream(&output);
+    bool called = false;
+    endpoint.set_http_handler([&](websocketpp::connection_hdl) {});
+    con->set_http_handler([&](websocketpp::connection_hdl) {
+        called = true;
+        BOOST_CHECK_EQUAL(con->get_origin(), "https://example.org");
+        con->set_status(websocketpp::http::status_code::ok);
+    });
+    con->start();
+    std::string const request = "GET / HTTP/1.1\r\nHost: localhost\r\n"
+        "Origin: https://example.org\r\n\r\n";
+    con->read_some(request.data(), request.size());
+    BOOST_CHECK(called);
+    BOOST_CHECK_EQUAL(con->get_origin(), "https://example.org");
+}

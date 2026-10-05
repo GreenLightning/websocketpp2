@@ -37,7 +37,7 @@ void connection<config>::set_termination_handler(
 template <typename config>
 std::string const & connection<config>::get_origin() const {
     //scoped_lock_type lock(m_connection_state_lock);
-    return m_processor->get_origin(m_request);
+    return m_request.get_header("Origin");
 }
 
 template <typename config>
