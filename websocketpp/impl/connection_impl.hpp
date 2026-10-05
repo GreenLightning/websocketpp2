@@ -2105,6 +2105,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
                     "Invalid close code");
                 if (ec) {
                     log_err(log::elevel::devel,"send_close_ack",ec);
+                    terminate(ec);
                 }
             }
             return;
@@ -2123,6 +2124,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
                     "Invalid close reason");
                 if (ec) {
                     log_err(log::elevel::devel,"send_close_ack",ec);
+                    terminate(ec);
                 }
             }
             return;
@@ -2137,6 +2139,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
             ec = send_close_ack();
             if (ec) {
                 log_err(log::elevel::devel,"send_close_ack",ec);
+                terminate(ec);
             }
         } else if (m_state == session::state::closing && !m_was_clean) {
             // ack of our close

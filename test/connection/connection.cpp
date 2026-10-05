@@ -836,3 +836,57 @@ BOOST_AUTO_TEST_CASE( origin_is_available_without_websocket_processor ) {
     BOOST_CHECK(called);
     BOOST_CHECK_EQUAL(con->get_origin(), "https://example.org");
 }
+
+namespace {
+struct failing_message_manager : websocketpp::config::core::con_msg_manager_type {
+    typedef websocketpp::lib::shared_ptr<failing_message_manager> ptr;
+    using websocketpp::config::core::con_msg_manager_type::get_message;
+    static bool refuse;
+    message_ptr get_message() {
+        return refuse ? message_ptr() : websocketpp::config::core::con_msg_manager_type::get_message();
+    }
+};
+bool failing_message_manager::refuse = false;
+struct failing_message_config : websocketpp::config::core {
+    typedef failing_message_manager con_msg_manager_type;
+};
+}
+
+BOOST_AUTO_TEST_CASE( failed_close_ack_terminates_once ) {
+    std::vector<std::string> payloads;
+    payloads.push_back(std::string("\x03\xe8", 2)); // Normal close.
+    payloads.push_back(std::string("\x03\xed", 2)); // Reserved code 1005.
+    payloads.push_back(std::string("\x03\xe8\xff", 3)); // Invalid UTF-8 reason.
+    for (auto const & payload : payloads) {
+        websocketpp::server<failing_message_config> endpoint;
+        endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        endpoint.clear_error_channels(websocketpp::log::elevel::all);
+        std::stringstream output;
+        endpoint.register_ostream(&output);
+        int closes = 0;
+        endpoint.set_close_handler([&](websocketpp::connection_hdl) { ++closes; });
+        websocketpp::lib::error_code creation_ec;
+        auto con = endpoint.get_connection(creation_ec);
+        BOOST_REQUIRE(!creation_ec);
+        con->start();
+        std::string const handshake = "GET / HTTP/1.1\r\nHost: localhost\r\n"
+            "Connection: Upgrade\r\nUpgrade: websocket\r\n"
+            "Sec-WebSocket-Version: 13\r\n"
+            "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n";
+        con->read_some(handshake.data(), handshake.size());
+        BOOST_REQUIRE(con->get_state() == websocketpp::session::state::open);
+        failing_message_manager::refuse = true;
+        std::string frame(1, char(0x88));
+        frame.push_back(char(0x80 | payload.size()));
+        frame.append(4, '\0');
+        frame += payload;
+        con->read_some(frame.data(), frame.size());
+        failing_message_manager::refuse = false;
+        BOOST_CHECK(con->get_state() == websocketpp::session::state::closed);
+        BOOST_CHECK_EQUAL(closes, 1);
+        BOOST_CHECK_EQUAL(con->get_ec(), websocketpp::error::make_error_code(
+            websocketpp::error::no_outgoing_buffers));
+        con->eof();
+        BOOST_CHECK_EQUAL(closes, 1);
+    }
+}
