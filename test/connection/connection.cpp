@@ -780,3 +780,34 @@ BOOST_AUTO_TEST_CASE( server_handshake_timeout_race2 ) {
     
     BOOST_CHECK_EQUAL(con->get_ec(), make_error_code(websocketpp::error::open_handshake_timeout));
 }
+
+BOOST_AUTO_TEST_CASE( queued_pong_timeout_is_ignored_after_close ) {
+    server endpoint;
+    endpoint.clear_access_channels(websocketpp::log::alevel::all);
+    endpoint.clear_error_channels(websocketpp::log::elevel::all);
+    std::stringstream output;
+    endpoint.register_ostream(&output);
+    int timeouts = 0;
+    endpoint.set_pong_timeout_handler([&](websocketpp::connection_hdl, std::string) {
+        ++timeouts;
+    });
+    websocketpp::lib::error_code creation_ec;
+    auto con = endpoint.get_connection(creation_ec);
+    BOOST_REQUIRE(!creation_ec);
+    con->start();
+    std::string const handshake = "GET / HTTP/1.1\r\nHost: localhost\r\n"
+        "Connection: Upgrade\r\nUpgrade: websocket\r\n"
+        "Sec-WebSocket-Version: 13\r\n"
+        "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n";
+    con->read_some(handshake.data(), handshake.size());
+    BOOST_REQUIRE(con->get_state() == websocketpp::session::state::open);
+    con->handle_pong_timeout("live", websocketpp::lib::error_code());
+    BOOST_CHECK_EQUAL(timeouts, 1);
+    con->close(websocketpp::close::status::normal, "");
+    // A successful completion may already be queued when cancel() is called.
+    con->handle_pong_timeout("queued", websocketpp::lib::error_code());
+    BOOST_CHECK_EQUAL(timeouts, 1);
+    con->eof();
+    con->handle_pong_timeout("closed", websocketpp::lib::error_code());
+    BOOST_CHECK_EQUAL(timeouts, 1);
+}
