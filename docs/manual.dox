@@ -1,5 +1,14 @@
 /** \mainpage
 
+Fork and continuation of the original (now mostly inactive)
+[websocketpp](https://github.com/zaphoyd/websocketpp) project. The goal of
+this fork is to modernize and evolve the library while providing a
+straightforward upgrade path for existing users. We are AI-positive.
+
+- [Project website](https://greenlightning.github.io/websocketpp2/)
+- [Source and upgrade notes](https://github.com/GreenLightning/websocketpp2)
+- [Report an issue](https://github.com/GreenLightning/websocketpp2/issues)
+
 WebSocket++ is a C++ library that can be used to implement WebSocket functionality. The goals of the project are to provide a WebSocket implementation that is portable, flexible, lightweight, low level, and high performance.
 
 WebSocket++ does not intend to be used alone as a web application framework or full featured web services platform. As such the components, examples, and performance tuning are geared towards operation as a WebSocket client or server. There are some minimal convenience features that stray from this (for example the ability to respond to HTTP requests other than WebSocket Upgrades) but these are not the focus of the project. In particular WebSocket++ does not intend to implement any non-WebSocket related fallback options (ajax / long polling / comet / etc).
@@ -20,4 +29,3 @@ In order to accommodate the wide variety of use cases WebSocket++ has collected,
  - \subpage reference.logging "Logging Reference"
 
 */
-

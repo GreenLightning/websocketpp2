@@ -25,6 +25,7 @@ cd "$root"
 } | doxygen -
 
 cp website/index.html "$out/index.html"
+cp website/style.css website/mark.svg "$out/"
 cp examples/browser_client/index.html "$out/browser_client/index.html"
 # The site is plain HTML, so Jekyll must not process it.
 touch "$out/.nojekyll"
