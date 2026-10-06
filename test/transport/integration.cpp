@@ -7,7 +7,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <array>
+#include <chrono>
 #include <iterator>
+#include <thread>
 #include <websocketpp/common/asio.hpp>
 
 #include <websocketpp/common/thread.hpp>
@@ -77,7 +79,7 @@ using websocketpp::lib::bind;
 
 template <typename T>
 void close_after_timeout(T & e, websocketpp::connection_hdl hdl, long timeout) {
-    sleep(timeout);
+    std::this_thread::sleep_for(std::chrono::seconds(timeout));
 
     websocketpp::lib::error_code ec;
     e.close(hdl,websocketpp::close::status::normal,"",ec);
@@ -256,7 +258,7 @@ void fail_on_open(websocketpp::connection_hdl) {
 }
 
 void delay(websocketpp::connection_hdl, long duration) {
-    sleep(duration);
+    std::this_thread::sleep_for(std::chrono::seconds(duration));
 }
 
 template <typename T>
@@ -339,7 +341,7 @@ BOOST_AUTO_TEST_CASE( pong_no_timeout ) {
 
     websocketpp::lib::thread sthread(websocketpp::lib::bind(&run_server,&s,9005,false));
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     // Run a client that closes the connection after 1 seconds
     run_time_limited_client(c, "http://localhost:9005", 1, false);
@@ -364,7 +366,7 @@ BOOST_AUTO_TEST_CASE( pong_timeout ) {
         websocketpp::lib::error_code(),::_1));
 
     websocketpp::lib::thread sthread(websocketpp::lib::bind(&run_server,&s,9005,false));
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     test_deadline_timer deadline(10);
 
@@ -385,7 +387,7 @@ BOOST_AUTO_TEST_CASE( client_open_handshake_timeout ) {
     websocketpp::lib::thread sthread(websocketpp::lib::bind(&run_dummy_server,9005));
     sthread.detach();
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     test_deadline_timer deadline(10);
 
@@ -405,7 +407,7 @@ BOOST_AUTO_TEST_CASE( server_open_handshake_timeout ) {
 
     test_deadline_timer deadline(10);
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     run_dummy_client("9005");
 
@@ -430,7 +432,7 @@ BOOST_AUTO_TEST_CASE( client_self_initiated_close_handshake_timeout ) {
 
     test_deadline_timer deadline(10);
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     run_client(c, "http://localhost:9005", false);
 
@@ -559,7 +561,7 @@ BOOST_AUTO_TEST_CASE( server_self_initiated_close_handshake_timeout ) {
     websocketpp::lib::thread sthread(websocketpp::lib::bind(&run_server,&s,9005,false));
     test_deadline_timer deadline(10);
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     run_client(c, "http://localhost:9005", false);
 
@@ -597,7 +599,7 @@ BOOST_AUTO_TEST_CASE( client_is_perpetual ) {
 
     websocketpp::lib::thread cthread(websocketpp::lib::bind(&run_client_and_mark,&c,&flag,&mutex));
 
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     {
         // Checks that the thread hasn't exited yet
@@ -607,7 +609,7 @@ BOOST_AUTO_TEST_CASE( client_is_perpetual ) {
 
     c.stop_perpetual();
 
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     {
         // Checks that the thread has exited
@@ -637,7 +639,7 @@ BOOST_AUTO_TEST_CASE( stop_listening ) {
     websocketpp::lib::thread sthread(websocketpp::lib::bind(&run_server,&s,9005,false));
     test_deadline_timer deadline(5);
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     run_client(c, "http://localhost:9005", false);
 

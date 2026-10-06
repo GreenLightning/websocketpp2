@@ -7,7 +7,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <exception>
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include <websocketpp/common/thread.hpp>
 
@@ -162,7 +164,7 @@ BOOST_AUTO_TEST_CASE( tls_handshake_timeout ) {
     dummy_server.detach();
     timer.detach();
 
-    sleep(1); // give the server thread some time to start
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // give the server thread some time to start
 
     mock_endpoint endpoint;
     endpoint.set_tls_init_handler(&on_tls_init);

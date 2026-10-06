@@ -6,6 +6,10 @@
 #include <websocketpp/client.hpp>
 
 #include <iostream>
+#include <cstring>
+#if !defined(_WIN32)
+#include <strings.h>
+#endif
 
 typedef websocketpp::client<websocketpp::config::asio_tls_client> client;
 typedef websocketpp::lib::shared_ptr<websocketpp::lib::asio::ssl::context> context_ptr;
@@ -16,6 +20,14 @@ using websocketpp::lib::bind;
 
 void on_message(websocketpp::connection_hdl, client::message_ptr msg) {
     std::cout << msg->get_payload() << std::endl;
+}
+
+bool hostname_equal(char const * lhs, char const * rhs) {
+#if defined(_WIN32)
+    return _stricmp(lhs, rhs) == 0;
+#else
+    return strcasecmp(lhs, rhs) == 0;
+#endif
 }
 
 /// Verify that one of the subject alternative names matches the given hostname
@@ -45,7 +57,7 @@ bool verify_subject_alternative_name(const char * hostname, X509 * cert) {
             break;
         }
         // Compare expected hostname with the CN
-        result = (strcasecmp(hostname, dns_name) == 0);
+        result = hostname_equal(hostname, dns_name);
     }
     sk_GENERAL_NAME_pop_free(san_names, GENERAL_NAME_free);
     
@@ -80,7 +92,7 @@ bool verify_common_name(char const * hostname, X509 * cert) {
     }
     
     // Compare expected hostname with the CN
-    return (strcasecmp(hostname, common_name_str) == 0);
+    return hostname_equal(hostname, common_name_str);
 }
 
 /**

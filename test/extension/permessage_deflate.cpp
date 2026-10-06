@@ -47,6 +47,22 @@ BOOST_AUTO_TEST_CASE( disabled_is_off ) {
     BOOST_CHECK( !exts.is_enabled() );
 }
 
+BOOST_AUTO_TEST_CASE( disabled_operations_return_extension_error ) {
+    disabled_type exts;
+    websocketpp::lib::error_code expected =
+        websocketpp::extensions::error::make_error_code(
+            websocketpp::extensions::error::disabled);
+    websocketpp::http::attribute_list offer;
+    std::string output = "unchanged";
+
+    auto result = exts.negotiate(offer);
+    BOOST_CHECK_EQUAL( result.first, expected );
+    BOOST_CHECK( result.second.empty() );
+    BOOST_CHECK_EQUAL( exts.compress("input", output), expected );
+    BOOST_CHECK_EQUAL( exts.decompress(nullptr, 0, output), expected );
+    BOOST_CHECK_EQUAL( output, "unchanged" );
+}
+
 // Ensure the enabled version actually works
 
 BOOST_AUTO_TEST_CASE( enabled_is_enabled ) {
