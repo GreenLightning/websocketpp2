@@ -15,9 +15,6 @@ using std::bind;
 using std::ref;
 namespace placeholders = std::placeholders;
 
-// Retained for source compatibility with existing handler registrations.
-#define _WEBSOCKETPP_REF(x) x
-
 template <typename T>
 void clear_function(T & x) {
     x = nullptr;

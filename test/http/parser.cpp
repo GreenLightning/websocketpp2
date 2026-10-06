@@ -939,7 +939,7 @@ BOOST_AUTO_TEST_CASE( plain_http_response ) {
     BOOST_CHECK_EQUAL( r.get_body(), "<!doctype html>\n<html>\n<head>\n<title>Thor</title>\n</head>\n<body> \n<p>Thor</p>\n</body>" );
 }
 
-BOOST_AUTO_TEST_CASE( parse_istream ) {
+BOOST_AUTO_TEST_CASE( parse_response_preserves_trailing_data ) {
     websocketpp::http::parser::response r;
 
     std::stringstream s;
@@ -949,10 +949,12 @@ BOOST_AUTO_TEST_CASE( parse_istream ) {
     size_t pos = 0;
     websocketpp::lib::error_code ec;
 
-    pos += r.consume(s,ec);
+    std::string const raw = s.str() + "trailing bytes";
+    pos += r.consume(raw.data(),raw.size(),ec);
     BOOST_CHECK_EQUAL(ec, websocketpp::lib::error_code());
 
     BOOST_CHECK_EQUAL( pos, 405 );
+    BOOST_CHECK_EQUAL( raw.substr(pos), "trailing bytes" );
     BOOST_CHECK_EQUAL( r.headers_ready(), true );
     BOOST_CHECK_EQUAL( r.ready(), true );
 }

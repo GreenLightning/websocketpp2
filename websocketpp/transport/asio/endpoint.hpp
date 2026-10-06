@@ -56,6 +56,8 @@ public:
     /// Type of a pointer to the ASIO io_context being used
     typedef lib::asio::io_context * io_context_ptr;
     /// Compatibility alias for the former io_service pointer type
+    /// @deprecated Use io_context_ptr instead.
+    _WEBSOCKETPP_DEPRECATED_("Use io_context_ptr instead")
     typedef io_context_ptr io_service_ptr;
     /// Type of a shared pointer to the acceptor being used
     typedef lib::shared_ptr<lib::asio::ip::tcp::acceptor> acceptor_ptr;
@@ -247,20 +249,6 @@ public:
         m_tcp_pre_init_handler = h;
     }
 
-    /// Sets the tcp pre init handler (deprecated)
-    /**
-     * The tcp pre init handler is called after the raw tcp connection has been
-     * established but before any additional wrappers (proxy connects, TLS
-     * handshakes, etc) have been performed.
-     *
-     * @deprecated Use set_tcp_pre_init_handler instead
-     *
-     * @param h The handler to call on tcp pre init.
-     */
-    void set_tcp_init_handler(tcp_init_handler h) {
-        set_tcp_pre_init_handler(h);
-    }
-
     /// Sets the tcp post init handler
     /**
      * The tcp post init handler is called after the tcp connection has been
@@ -338,6 +326,8 @@ public:
     }
 
     /// Compatibility wrapper for get_io_context()
+    /// @deprecated Use get_io_context() instead.
+    _WEBSOCKETPP_DEPRECATED_("Use get_io_context() instead")
     lib::asio::io_context & get_io_service() {
         return get_io_context();
     }
@@ -656,6 +646,8 @@ public:
     }
 
     /// Compatibility wrapper for restart()
+    /// @deprecated Use restart() instead.
+    _WEBSOCKETPP_DEPRECATED_("Use restart() instead")
     void reset() {
         restart();
     }

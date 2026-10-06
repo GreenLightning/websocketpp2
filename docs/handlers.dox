@@ -131,7 +131,7 @@ of `endpoint::listen`.
 | ------------------------------------- | --------------------------------------------------------------------- | ---------------------------- |
 | Async Accept Loop end (after opening) | `accept_loop(void(lib::error_code const &, lib::error_code const &))` | 0.9.0 Core, Server role only |
 
-This handler is passed to the `endpoint::start_accept()` function, which initiates an
+This handler is passed to the `endpoint::start_accept(accept_loop_handler)` function, which initiates an
 asyncronous loop that accepts new connections, and is invoked when that loop ends. The
 handler will be called exactly once for each call of `start_accept` no matter when or
 how it exits (it might exit immediately).

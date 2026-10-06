@@ -1,6 +1,3 @@
 @PACKAGE_INIT@
 
-# Keep the legacy variables alongside the exported target.
-set_and_check(WEBSOCKETPP_INCLUDE_DIR "@PACKAGE_INSTALL_INCLUDE_DIR@")
-set(WEBSOCKETPP_FOUND TRUE)
 include("${CMAKE_CURRENT_LIST_DIR}/websocketpp-targets.cmake")

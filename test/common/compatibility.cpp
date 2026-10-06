@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // See LICENSE.txt for the full license text.
 
-// Including the legacy configuration header must not change backend selection.
-#include <websocketpp/config/boost_config.hpp>
 #include <websocketpp/common/chrono.hpp>
 #include <websocketpp/common/connection_hdl.hpp>
 #include <websocketpp/common/functional.hpp>

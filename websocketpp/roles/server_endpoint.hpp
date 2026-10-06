@@ -73,26 +73,6 @@ public:
      * Note: The connection must either be started or terminated using
      * connection::terminate in order to avoid memory leaks.
      *
-     * @deprecated 0.9.0 use `get_connection(lib::error_code &)` instead.
-     * 
-     * @see `get_connection(lib::error_code &)` for an alternative that
-     * returns a detailed error code on failure.
-     * 
-     * @return A pointer to the new connection.
-     */
-    connection_ptr get_connection() {
-        lib::error_code ec;
-        return endpoint_type::create_connection(ec);
-    }
-
-    /// Create and initialize a new connection
-    /**
-     * The connection will be initialized and ready to begin. Call its start()
-     * method to begin the processing loop.
-     *
-     * Note: The connection must either be started or terminated using
-     * connection::terminate in order to avoid memory leaks.
-     *
      * @since 0.9.0
      * 
      * @param [out] ec A status code that indicates why the failure occurred
@@ -101,54 +81,6 @@ public:
      */
     connection_ptr get_connection(lib::error_code & ec) {
         return endpoint_type::create_connection(ec);
-    }
-
-    /// Starts the server's async connection acceptance loop (exception free)
-    /**
-     * Initiates the server connection acceptance loop. Must be called after
-     * listen. This method will have no effect until the underlying io_context
-     * starts running. It may be called after the io_context is already running.
-     *
-     * Refer to documentation for the transport policy you are using for
-     * instructions on how to stop this acceptance loop.
-     * 
-     * Error handling:
-     * start_accept will return an error via the `ec` parameter if there is a 
-     * problem starting the accept loop. Once successfully started the loop will
-     * continue to renew itself after each connection. This method has no way of
-     * delivering that happen after the loop is started. Use 
-     * `start_accept(accept_loop_handler)` instead to get full error information
-     * no matter when the async loop ends.
-     *
-     * @deprecated use `start_accept(accept_loop_handler) instead
-     * 
-     * @param [out] ec A status code indicating an error, if any.
-     */
-    void start_accept(lib::error_code & ec) {
-        if (!transport_type::is_listening()) {
-            ec = error::make_error_code(error::async_accept_not_listening);
-            return;
-        }
-        
-        ec = lib::error_code();
-        connection_ptr con = get_connection(ec);
-
-        if (!con) {
-          ec = error::make_error_code(error::con_creation_failed);
-          return;
-        }
-
-        transport_type::async_accept(
-            lib::static_pointer_cast<transport_con_type>(con),
-            lib::bind(&type::handle_accept_legacy,this,con,lib::placeholders::_1),
-            ec
-        );
-
-        if (ec && con) {
-            // If the connection was constructed but the accept failed,
-            // terminate the connection to prevent memory leaks
-            con->terminate(lib::error_code());
-        }
     }
 
     /// Starts the server's async connection acceptance loop (exception free)
@@ -214,66 +146,6 @@ public:
 
             // let the end user know about the error
             completion_handler(error::make_error_code(error::transport_error),tec);
-        }
-    }
-
-#ifndef _WEBSOCKETPP_NO_EXCEPTIONS_
-    /// Starts the server's async connection acceptance loop (exception)
-    /**
-     * Initiates the server connection acceptance loop. Requires a transport
-     * policy that supports an asyncronous listen+accept loop. Must be called
-     * while the endpoint is listening (or start_accept will return immediately
-     * with an error that the server is not listening).
-     * 
-     * Consult the documentation for the underlying transport for information
-     * about exactly when this code will start running, when in the transport
-     * event loop it makes sense to call it, and for instructions on how to
-     * stop this acceptance loop.
-     *
-     * Error handling:
-     * start_accept will throw an exception if there is a problem starting the
-     * accept loop. Once successfully started the loop will continue to renew
-     * itself after each connection. This method has no way of delivering that
-     * happen after the loop is started. Use `start_accept(accept_loop_handler)`
-     * instead to get full error information no matter when the async loop ends.
-     * 
-     * @deprecated use `start_accept(accept_loop_handler)` instead
-     * 
-     * @exception websocketpp::exception If the accept loop fails to be set up.
-     */
-    void start_accept() {
-        lib::error_code ec;
-        start_accept(ec);
-        if (ec) {
-            throw exception(ec);
-        }
-    }
-#endif // _WEBSOCKETPP_NO_EXCEPTIONS_
-
-    /// Handler callback for start_accept (deprecated)
-    void handle_accept_legacy(connection_ptr con, lib::error_code const & ec) {
-        if (ec) {
-            con->terminate(ec);
-
-            if (ec == error::operation_canceled) {
-                endpoint_type::m_elog->write(log::elevel::info,
-                    "handle_accept error: "+ec.message());
-            } else {
-                endpoint_type::m_elog->write(log::elevel::rerror,
-                    "handle_accept error: "+ec.message());
-            }
-        } else {
-            con->start();
-        }
-
-        lib::error_code start_ec;
-        start_accept(start_ec);
-        if (start_ec == error::async_accept_not_listening) {
-            endpoint_type::m_elog->write(log::elevel::info,
-                "Stopping acceptance of new connections because the underlying transport is no longer listening.");
-        } else if (start_ec) {
-            endpoint_type::m_elog->write(log::elevel::rerror,
-                "Restarting async_accept loop failed: "+ec.message());
         }
     }
 

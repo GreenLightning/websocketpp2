@@ -98,7 +98,10 @@ BOOST_AUTO_TEST_CASE( write_failure_stops_queued_messages ) {
     endpoint.set_open_handler([&](websocketpp::connection_hdl) { ++opens; });
     endpoint.set_close_handler([&](websocketpp::connection_hdl) { ++closes; });
     endpoint.set_fail_handler([&](websocketpp::connection_hdl) { ++failures; });
-    endpoint_type::connection_ptr con = endpoint.get_connection();
+    websocketpp::lib::error_code ec;
+    endpoint_type::connection_ptr con = endpoint.get_connection(ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
     con->start();
     std::string const handshake = "GET / HTTP/1.1\r\nHost: localhost\r\n"
         "Connection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\n"
@@ -463,7 +466,10 @@ BOOST_AUTO_TEST_CASE( deferred_http_request ) {
     std::stringstream ostream;
     s.register_ostream(&ostream);
 
-    con = s.get_connection();
+    websocketpp::lib::error_code ec;
+    con = s.get_connection(ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
     con->start();
     
     BOOST_CHECK(!deferred);
@@ -475,7 +481,6 @@ BOOST_AUTO_TEST_CASE( deferred_http_request ) {
     con->set_body(con->get_resource());
     con->set_status(websocketpp::http::status_code::ok);
     
-    websocketpp::lib::error_code ec;
     s.send_http_response(con->get_handle(),ec);
     BOOST_CHECK_EQUAL(ec, websocketpp::lib::error_code());
     BOOST_CHECK_EQUAL(ostream.str(), output);
@@ -709,7 +714,10 @@ BOOST_AUTO_TEST_CASE( server_handshake_timeout_race1 ) {
 
     std::string input = "GET / HTTP/1.1\r\nHost: www.example.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: AAAAAAAAAAAAAAAAAAAAAA==\r\n\r\n";
 
-    debug_server::connection_ptr con = s.get_connection();
+    websocketpp::lib::error_code ec;
+    debug_server::connection_ptr con = s.get_connection(ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
     con->start();
     
     con->expire_timer(websocketpp::lib::error_code());
@@ -724,7 +732,10 @@ BOOST_AUTO_TEST_CASE( server_handshake_timeout_race2 ) {
 
     std::string input = "GET / HTTP/1.1\r\nHost: www.example.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: AAAAAAAAAAAAAAAAAAAAAA==\r\n\r\n";
 
-    debug_server::connection_ptr con = s.get_connection();
+    websocketpp::lib::error_code ec;
+    debug_server::connection_ptr con = s.get_connection(ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
     con->start();
     
     con->read_all(input.data(), input.size());

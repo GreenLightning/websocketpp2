@@ -4,6 +4,8 @@
 
 #include "connection_tu2.hpp"
 
+#include <boost/test/unit_test.hpp>
+
 void echo_func(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     s->send(hdl, msg->get_payload(), msg->get_opcode());
 }
@@ -27,7 +29,10 @@ std::string run_server_test(server & s, std::string input, bool log) {
 
     s.register_ostream(&output);
 
-    con = s.get_connection();
+    websocketpp::lib::error_code ec;
+    con = s.get_connection(ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
     con->start();
 
     std::stringstream channel;

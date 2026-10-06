@@ -1,10 +1,15 @@
 HEAD
+- Removed deprecated server get_connection() and legacy start_accept overloads,
+  the HTTP response stream parser and its stream-only constants, buffered_amount(),
+  readsome(), set_tcp_init_handler(), config/boost_config.hpp, and _WEBSOCKETPP_REF.
+- Removed BOOST_ROOT_CPP11 and legacy CMake package variables; use the exported
+  websocketpp::websocketpp target.
 - Added support for CMake 4.
 - Raised minimum standalone Asio version to 1.12.0 and Boost version to 1.66.0.
 - Updated the Asio transport to use io_context and current executor, resolver,
   timer, and handler allocation APIs, including builds with deprecated Asio
   interfaces disabled. Retained io_service_ptr, get_io_service(), and reset()
-  as compatibility wrappers.
+  as deprecated compatibility wrappers.
 - Raised minimum C++ standard to C++11.
 - Raised minimum CMake version to 3.18.
 - Removed support for Boost standard-library polyfills.

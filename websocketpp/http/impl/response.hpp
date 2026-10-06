@@ -5,7 +5,6 @@
 #pragma once
 
 #include <algorithm>
-#include <istream>
 #include <sstream>
 #include <string>
 
@@ -160,63 +159,6 @@ inline size_t response::consume(char const * buf, size_t len, lib::error_code & 
         // delimiter found.
         begin = end+(sizeof(header_delimiter) - 1);
     }
-}
-
-inline size_t response::consume(std::istream & s, lib::error_code & ec) {
-    char buf[istream_buffer];
-    size_t bytes_read;
-    size_t bytes_processed;
-    size_t total = 0;
-
-    while (s.good()) {
-        s.getline(buf,istream_buffer);
-        bytes_read = static_cast<size_t>(s.gcount());
-
-        if (s.fail() || s.eof()) {
-            bytes_processed = this->consume(buf,bytes_read,ec);
-            total += bytes_processed;
-
-            if (ec) { return total; }
-
-            if (bytes_processed != bytes_read) {
-                // we read more data from the stream than we needed for the
-                // HTTP response. This extra data gets thrown away now.
-                // Returning it to the caller is complicated so we alert the
-                // caller at least. This whole method has been deprecated
-                // because this convenience method doesnt really add useful
-                // functionality to the library, but makes it difficult to
-                // recover from error cases.
-                ec = error::make_error_code(error::istream_overread);
-                return total;
-            }
-        } else if (s.bad()) {
-            // problem
-            break;
-        } else {
-            // the delimiting newline was found. Replace the trailing null with
-            // the newline that was discarded, since our raw consume function
-            // expects the newline to be be there.
-            buf[bytes_read-1] = '\n';
-            bytes_processed = this->consume(buf,bytes_read,ec);
-            total += bytes_processed;
-
-            if (ec) { return total; }
-
-            if (bytes_processed != bytes_read) {
-                // we read more data from the stream than we needed for the
-                // HTTP response. This extra data gets thrown away now.
-                // Returning it to the caller is complicated so we alert the
-                // caller at least. This whole method has been deprecated
-                // because this convenience method doesnt really add useful
-                // functionality to the library, but makes it difficult to
-                // recover from error cases.
-                ec = error::make_error_code(error::istream_overread);
-                return total;
-            }
-        }
-    }
-
-    return total;
 }
 
 inline std::string response::raw() const {

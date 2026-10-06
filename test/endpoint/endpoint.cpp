@@ -25,6 +25,15 @@ BOOST_AUTO_TEST_CASE( initialize_server_asio ) {
     s.init_asio();
 }
 
+// These tests intentionally exercise retained deprecated wrappers.
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 BOOST_AUTO_TEST_CASE( initialize_server_asio_external ) {
     websocketpp::server<websocketpp::config::asio> s;
     websocketpp::lib::asio::io_context ios;
@@ -56,6 +65,12 @@ BOOST_AUTO_TEST_CASE( restart_server_asio ) {
     s.run();
     BOOST_CHECK_EQUAL(calls, 2);
 }
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 BOOST_AUTO_TEST_CASE( perpetual_server_asio ) {
     websocketpp::server<websocketpp::config::asio> s;

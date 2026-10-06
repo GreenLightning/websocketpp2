@@ -46,9 +46,6 @@ size_t const max_header_size = 16000;
 /// Default Maximum size in bytes for HTTP message bodies.
 size_t const max_body_size = 32000000;
 
-/// Number of bytes to use for temporary istream read buffers
-size_t const istream_buffer = 512;
-
 /// invalid HTTP token characters
 /**
  * 0x00 - 0x32, 0x7f-0xff
@@ -331,12 +328,6 @@ enum value {
     /// The response status line was missing some required values
     incomplete_status_line,
 
-    /// An istream read command returned with the bad flag set
-    istream_bad,
-
-    /// An istream read succeeded but read (and discarded) more bits from the
-    /// stream than it needed
-    istream_overread,
 };
 
 /// Get the HTTP status code associated with the error
@@ -362,10 +353,6 @@ inline status_code::value get_status_code(error::value value) {
             return status_code::bad_request;
         case error::incomplete_status_line:
             return status_code::bad_request;
-        case error::istream_bad:
-            return status_code::internal_server_error;
-        case error::istream_overread:
-            return status_code::internal_server_error;
         default:
             return status_code::bad_request;
     }
@@ -400,10 +387,6 @@ public:
                 return "The request was missing some required values";
             case error::incomplete_status_line:
                 return "The response status line was missing some required values";
-            case error::istream_bad:
-                return "An istream read command returned with the bad flag set";
-            case error::istream_overread:
-                return "An istream read succeeded but read (and discarded) more bits from the stream than it needed";
             default:
                 return "Unknown";
         }

@@ -56,11 +56,28 @@ iostream/raw transports require neither Boost nor Asio headers.
 The Asio transport uses `io_context`, executor work guards, and executor-bound
 strands. Use `get_io_context()` to access the event loop and `restart()` before
 running it again after it has stopped. The former `get_io_service()`,
-`io_service_ptr`, and `reset()` names remain as compatibility wrappers. Custom
+`io_service_ptr`, and `reset()` names remain as deprecated compatibility wrappers
+and emit compiler warnings on GCC, Clang, and MSVC. Custom
 socket policies must use `asio::strand<asio::io_context::executor_type>` for
 their strand pointers.
 
 When upgrading:
+
+* Replace `start_accept()` and `start_accept(error_code&)` with
+  `start_accept(accept_loop_handler)`. The callback receives both the library
+  and transport error codes when the accept loop ends, including startup errors.
+  Replace the server's `get_connection()` with `get_connection(error_code&)`.
+* Replace `buffered_amount()`, `readsome()`, and `set_tcp_init_handler()` with
+  `get_buffered_amount()`, `read_some()`, and `set_tcp_pre_init_handler()`.
+* Read HTTP response bytes yourself and use
+  `response::consume(char const*, size_t, error_code&)`; the stream overload and
+  its `istream_buffer`, `istream_bad`, and `istream_overread` constants are removed.
+* Remove includes of `websocketpp/config/boost_config.hpp` and uses of the
+  identity macro `_WEBSOCKETPP_REF(x)` (use `x` directly).
+* Use normal Boost discovery settings such as `BOOST_ROOT` instead of the
+  removed `BOOST_ROOT_CPP11` environment variable. Use the
+  `websocketpp::websocketpp` CMake target instead of the removed
+  `WEBSOCKETPP_INCLUDE_DIR` and `WEBSOCKETPP_FOUND` package variables.
 
 * Compile with C++11 or later (for example, `-std=c++11`). The
   `websocketpp::websocketpp` CMake target propagates this minimum requirement

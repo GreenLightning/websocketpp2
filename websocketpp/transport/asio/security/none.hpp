@@ -41,6 +41,8 @@ public:
     /// Type of a pointer to the Asio io_context being used
     typedef lib::asio::io_context* io_context_ptr;
     /// Compatibility alias for the former io_service pointer type
+    /// @deprecated Use io_context_ptr instead.
+    _WEBSOCKETPP_DEPRECATED_("Use io_context_ptr instead")
     typedef io_context_ptr io_service_ptr;
     /// Type of a pointer to the Asio executor strand being used
     typedef lib::shared_ptr<lib::asio::strand<lib::asio::io_context::executor_type>> strand_ptr;

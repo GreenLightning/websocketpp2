@@ -64,6 +64,8 @@ public:
     /// Type of a pointer to the Asio io_context being used
     typedef lib::asio::io_context * io_context_ptr;
     /// Compatibility alias for the former io_service pointer type
+    /// @deprecated Use io_context_ptr instead.
+    _WEBSOCKETPP_DEPRECATED_("Use io_context_ptr instead")
     typedef io_context_ptr io_service_ptr;
     /// Type of a pointer to the Asio executor strand being used
     typedef lib::shared_ptr<lib::asio::strand<lib::asio::io_context::executor_type>> strand_ptr;
@@ -121,20 +123,6 @@ public:
      */
     void set_tcp_pre_init_handler(tcp_init_handler h) {
         m_tcp_pre_init_handler = h;
-    }
-
-    /// Sets the tcp pre init handler (deprecated)
-    /**
-     * The tcp pre init handler is called after the raw tcp connection has been
-     * established but before any additional wrappers (proxy connects, TLS
-     * handshakes, etc) have been performed.
-     *
-     * @deprecated Use set_tcp_pre_init_handler instead
-     *
-     * @param h The handler to call on tcp pre init.
-     */
-    void set_tcp_init_handler(tcp_init_handler h) {
-        set_tcp_pre_init_handler(h);
     }
 
     /// Sets the tcp post init handler
@@ -718,7 +706,7 @@ protected:
      * @param bytes_transferred The number of bytes read
      */
     void handle_proxy_read(init_handler callback,
-        lib::asio::error_code const & ec, size_t)
+        lib::asio::error_code const & ec, size_t bytes_transferred)
     {
         if (m_alog->static_test(log::alevel::devel)) {
             m_alog->write(log::alevel::devel,
@@ -750,17 +738,20 @@ protected:
                 return;
             }
 
-            // todo: switch this to using non-istream based consume
-            std::istream input(&m_proxy_data->read_buf);
+            // async_read_until reports the byte count through the end of the
+            // headers. Parse exactly that range with the buffer API.
+            std::string response(bytes_transferred, '\0');
+            lib::asio::buffer_copy(lib::asio::buffer(response),
+                m_proxy_data->read_buf.data(), bytes_transferred);
 
-            lib::error_code istream_ec;
-            m_proxy_data->res.consume(input, istream_ec);
-            if (istream_ec) {
+            lib::error_code parse_ec;
+            m_proxy_data->res.consume(response.data(), response.size(), parse_ec);
+            if (parse_ec) {
                 // there was an error while reading from the proxy
                 m_elog->write(log::elevel::info,
-                    "An HTTP handling error occurred while reading a response from the proxy server: "+istream_ec.message());
+                    "An HTTP handling error occurred while reading a response from the proxy server: "+parse_ec.message());
                 // todo: do we need to translate this error?
-                callback(istream_ec);
+                callback(parse_ec);
                 return;
             }
 

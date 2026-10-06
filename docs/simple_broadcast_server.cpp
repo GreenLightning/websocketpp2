@@ -1,3 +1,4 @@
+#include <iostream>
 #include <set>
 
 #include <websocketpp/config/asio_no_tls.hpp>
@@ -36,7 +37,11 @@ public:
 
     void run(uint16_t port) {
         m_server.listen(port);
-        m_server.start_accept();
+        m_server.start_accept([](websocketpp::lib::error_code const & ec,
+                                websocketpp::lib::error_code const & transport_ec) {
+            std::cout << "Accept loop ended: " << ec.message() << "/"
+                      << transport_ec.message() << std::endl;
+        });
         m_server.run();
     }
 private:

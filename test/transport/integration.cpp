@@ -99,7 +99,13 @@ void run_server(server * s, int port, bool log = false) {
     s->set_reuse_addr(true);
 
     s->listen(port);
-    s->start_accept();
+    s->start_accept([](websocketpp::lib::error_code const & ec,
+                       websocketpp::lib::error_code const & transport_ec) {
+        BOOST_CHECK_EQUAL(ec, websocketpp::error::make_error_code(
+            websocketpp::error::transport_error));
+        BOOST_CHECK_EQUAL(transport_ec, websocketpp::error::make_error_code(
+            websocketpp::error::async_accept_not_listening));
+    });
     s->run();
 }
 
@@ -655,7 +661,10 @@ BOOST_AUTO_TEST_CASE( pause_reading ) {
     std::stringstream null_output;
     s.register_ostream(&null_output);
 
-    iostream_server::connection_ptr con = s.get_connection();
+    websocketpp::lib::error_code ec;
+    iostream_server::connection_ptr con = s.get_connection(ec);
+    BOOST_REQUIRE(!ec);
+    BOOST_REQUIRE(con);
     con->start();
 
     // read handshake, should work

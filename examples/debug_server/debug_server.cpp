@@ -135,7 +135,11 @@ int main() {
         echo_server.listen(9012);
 
         // Start the server accept loop
-        echo_server.start_accept();
+        echo_server.start_accept([](websocketpp::lib::error_code const & ec,
+                                websocketpp::lib::error_code const & transport_ec) {
+            std::cout << "Accept loop ended: " << ec.message() << "/"
+                      << transport_ec.message() << std::endl;
+        });
 
         // Start the ASIO io_context run loop
         echo_server.run();

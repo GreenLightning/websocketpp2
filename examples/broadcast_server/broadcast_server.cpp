@@ -47,7 +47,7 @@ public:
         websocketpp::lib::error_code ec;
         // Initialize Asio Transport
         m_server.init_asio(ec);
-        if (!ec) {
+        if (ec) {
             return;
         }
 
@@ -62,15 +62,16 @@ public:
 
         // listen on specified port
         m_server.listen(port,ec);
-        if (!ec) {
+        if (ec) {
             return;
         }
 
         // Start the server accept loop
-        m_server.start_accept(ec);
-        if (!ec) {
-            return;
-        }
+        m_server.start_accept([](websocketpp::lib::error_code const & ec,
+                                websocketpp::lib::error_code const & transport_ec) {
+            std::cout << "Accept loop ended: " << ec.message() << "/"
+                      << transport_ec.message() << std::endl;
+        });
 
         // Start the ASIO io_context run loop
         //try {

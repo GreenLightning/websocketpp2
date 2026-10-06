@@ -28,3 +28,13 @@
     // don't define min and max macros that conflict with std::min and std::max
     #define NOMINMAX
 #endif
+
+// C++11 has no standard deprecation attribute. Use compiler annotations so
+// deprecated APIs warn without requiring C++14 or compiler extensions in users.
+#if defined(_MSC_VER)
+    #define _WEBSOCKETPP_DEPRECATED_(message) __declspec(deprecated(message))
+#elif defined(__GNUC__) || defined(__clang__)
+    #define _WEBSOCKETPP_DEPRECATED_(message) __attribute__((deprecated(message)))
+#else
+    #define _WEBSOCKETPP_DEPRECATED_(message)
+#endif

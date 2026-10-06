@@ -589,14 +589,6 @@ public:
      */
     size_t get_buffered_amount() const;
 
-    /// Get the size of the outgoing write buffer (in payload bytes)
-    /**
-     * @deprecated use `get_buffered_amount` instead
-     */
-    size_t buffered_amount() const {
-        return get_buffered_amount();
-    }
-
     ////////////////////
     // Action Methods //
     ////////////////////

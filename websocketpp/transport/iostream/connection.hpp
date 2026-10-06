@@ -176,15 +176,6 @@ public:
         return total_read;
     }
 
-    /// Manual input supply (DEPRECATED)
-    /**
-     * @deprecated DEPRECATED in favor of read_some()
-     * @see read_some()
-     */
-    size_t readsome(char const * buf, size_t len) {
-        return this->read_some(buf,len);
-    }
-
     /// Signal EOF
     /**
      * Signals to the transport that data stream being read has reached EOF and

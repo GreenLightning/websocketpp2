@@ -33,8 +33,8 @@ install(EXPORT websocketpp-targets NAMESPACE websocketpp::
 
 configure_package_config_file(websocketpp-config.cmake.in
     "${PROJECT_BINARY_DIR}/CMakeFiles/websocketpp-config.cmake"
-    PATH_VARS INSTALL_INCLUDE_DIR
     INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}"
+    NO_SET_AND_CHECK_MACRO
     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 write_basic_package_version_file(
     "${PROJECT_BINARY_DIR}/CMakeFiles/websocketpp-configVersion.cmake"
@@ -54,10 +54,6 @@ if(BUILD_EXAMPLES OR BUILD_TESTS)
         option(BOOST_STATIC "Link Boost libraries statically." ${MSVC})
         if(BOOST_STATIC)
             set(Boost_USE_STATIC_LIBS ON)
-        endif()
-        # Preserve the legacy dependency override without changing the cache.
-        if(NOT "$ENV{BOOST_ROOT_CPP11}" STREQUAL "")
-            file(TO_CMAKE_PATH "$ENV{BOOST_ROOT_CPP11}" BOOST_ROOT)
         endif()
         set(Boost_USE_MULTITHREADED ON)
         set(boost_components)

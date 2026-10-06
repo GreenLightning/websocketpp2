@@ -114,6 +114,7 @@ target_link_libraries(my_program PRIVATE websocketpp::websocketpp)</code></pre>
         <p>This server listens on port 9002 and echoes each message to its sender.</p>
         <pre tabindex="0" aria-label="C++ echo server example"><code>#include &lt;websocketpp/config/asio_no_tls.hpp&gt;
 #include &lt;websocketpp/server.hpp&gt;
+#include &lt;iostream&gt;
 
 using server = websocketpp::server&lt;websocketpp::config::asio&gt;;
 
@@ -126,7 +127,11 @@ int main() {
         });
     echo.init_asio();
     echo.listen(9002);
-    echo.start_accept();
+    echo.start_accept([](websocketpp::lib::error_code const &amp;ec,
+                         websocketpp::lib::error_code const &amp;transport_ec) {
+        std::cout &lt;&lt; "Accept loop ended: " &lt;&lt; ec.message() &lt;&lt; "/"
+                  &lt;&lt; transport_ec.message() &lt;&lt; std::endl;
+    });
     echo.run();
 }</code></pre>
         <p>Try it with the <a href="browser_client/">browser client</a>. Use
