@@ -516,7 +516,7 @@ inline masking_key_type get_masking_key(const basic_header &h, const
 inline uint16_t get_extended_size(const extended_header &e) {
     uint16_converter temp16;
     std::copy(e.bytes,e.bytes+2,temp16.c);
-    return ntohs(temp16.i);
+    return lib::net::_ntohs(temp16.i);
 }
 
 /// Extract the jumbo size field from an extended header

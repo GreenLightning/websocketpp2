@@ -36,7 +36,6 @@ namespace config {
  *
  * Operating System:
  * <stdint.h>
- * <netinet/in.h> or <winsock2.h> (for ntohl.. could potentially bundle this)
  *
  * @since 0.4.0-dev
  */

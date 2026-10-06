@@ -48,3 +48,50 @@ BOOST_AUTO_TEST_CASE(concurrent_first_conversion) {
     for (auto & worker : workers) { worker.join(); }
     BOOST_CHECK_EQUAL(failures.load(), 0);
 }
+
+BOOST_AUTO_TEST_CASE(network_order_16_bit) {
+    const struct {
+        uint16_t host;
+        unsigned char bytes[2];
+    } cases[] = {
+        {0x0000, {0x00, 0x00}},
+        {0x0001, {0x00, 0x01}},
+        {0x00ff, {0x00, 0xff}},
+        {0x0100, {0x01, 0x00}},
+        {0x1234, {0x12, 0x34}},
+        {0x8000, {0x80, 0x00}},
+        {0xffff, {0xff, 0xff}}
+    };
+    for (auto const & value : cases) {
+        const uint16_t network = websocketpp::lib::net::_htons(value.host);
+        BOOST_CHECK_EQUAL(std::memcmp(&network, value.bytes, sizeof(network)), 0);
+
+        uint16_t input;
+        std::memcpy(&input, value.bytes, sizeof(input));
+        BOOST_CHECK_EQUAL(websocketpp::lib::net::_ntohs(input), value.host);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(network_order_32_bit) {
+    const struct {
+        uint32_t host;
+        unsigned char bytes[4];
+    } cases[] = {
+        {0x00000000U, {0x00, 0x00, 0x00, 0x00}},
+        {0x00000001U, {0x00, 0x00, 0x00, 0x01}},
+        {0x0000ffffU, {0x00, 0x00, 0xff, 0xff}},
+        {0xffff0000U, {0xff, 0xff, 0x00, 0x00}},
+        {0x01234567U, {0x01, 0x23, 0x45, 0x67}},
+        {0x89abcdefU, {0x89, 0xab, 0xcd, 0xef}},
+        {0x80000000U, {0x80, 0x00, 0x00, 0x00}},
+        {0xffffffffU, {0xff, 0xff, 0xff, 0xff}}
+    };
+    for (auto const & value : cases) {
+        const uint32_t network = websocketpp::lib::net::_htonl(value.host);
+        BOOST_CHECK_EQUAL(std::memcmp(&network, value.bytes, sizeof(network)), 0);
+
+        uint32_t input;
+        std::memcpy(&input, value.bytes, sizeof(input));
+        BOOST_CHECK_EQUAL(websocketpp::lib::net::_ntohl(input), value.host);
+    }
+}

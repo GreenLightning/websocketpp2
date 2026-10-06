@@ -710,7 +710,7 @@ public:
 
         if (code != close::status::no_status) {
             close::code_converter val;
-            val.i = htons(code);
+            val.i = lib::net::_htons(code);
 
             payload.resize(reason.size()+2);
 

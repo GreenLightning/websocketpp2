@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE( extended_header_basics ) {
     uint8_t h2_solution[12] = {0x00, 0xFF, 0x00, 0x00, 0x00, 0x00,
                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-    frame::extended_header h3(uint16_t(256),htonl(0x8040201));
+    frame::extended_header h3(uint16_t(256),lib::net::_htonl(0x8040201));
     uint8_t h3_solution[12] = {0x01, 0x00, 0x08, 0x04, 0x02, 0x01,
                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( extended_header_basics ) {
     uint8_t h4_solution[12] = {0x08, 0x07, 0x06, 0x05, 0x04, 0x03,
                                0x02, 0x01, 0x00, 0x00, 0x00, 0x00};
 
-    frame::extended_header h5(uint64_t(0x0807060504030201LL),htonl(0x8040201));
+    frame::extended_header h5(uint64_t(0x0807060504030201LL),lib::net::_htonl(0x8040201));
     uint8_t h5_solution[12] = {0x08, 0x07, 0x06, 0x05, 0x04, 0x03,
                                0x02, 0x01, 0x08, 0x04, 0x02, 0x01};
 
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE( extended_header_extractors ) {
 
 BOOST_AUTO_TEST_CASE( header_preparation ) {
     frame::basic_header h1(0x81,0xFF); //
-    frame::extended_header e1(uint64_t(0xFFFFFLL),htonl(0xD5FB70EE));
+    frame::extended_header e1(uint64_t(0xFFFFFLL),lib::net::_htonl(0xD5FB70EE));
     std::string p1 = prepare_header(h1, e1);
     uint8_t s1[14] = {0x81, 0xFF,
                      0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0xFF,
@@ -214,21 +214,21 @@ BOOST_AUTO_TEST_CASE( header_preparation ) {
 BOOST_AUTO_TEST_CASE( prepare_masking_key ) {
     frame::masking_key_type key;
 
-    key.i = htonl(0x12345678);
+    key.i = lib::net::_htonl(0x12345678);
 
     if (sizeof(size_t) == 8) {
         BOOST_CHECK(
             frame::prepare_masking_key(key) == lib::net::_htonll(0x1234567812345678LL)
         );
     } else {
-        BOOST_CHECK( frame::prepare_masking_key(key) == htonl(0x12345678) );
+        BOOST_CHECK( frame::prepare_masking_key(key) == lib::net::_htonl(0x12345678) );
     }
 }
 
 BOOST_AUTO_TEST_CASE( prepare_masking_key2 ) {
     frame::masking_key_type key;
 
-    key.i = htonl(0xD5FB70EE);
+    key.i = lib::net::_htonl(0xD5FB70EE);
 
     // One call
     if (sizeof(size_t) == 8) {
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( prepare_masking_key2 ) {
             frame::prepare_masking_key(key) == lib::net::_htonll(0xD5FB70EED5FB70EELL)
         );
     } else {
-        BOOST_CHECK( frame::prepare_masking_key(key) == htonl(0xD5FB70EE) );
+        BOOST_CHECK( frame::prepare_masking_key(key) == lib::net::_htonl(0xD5FB70EE) );
     }
 }
 

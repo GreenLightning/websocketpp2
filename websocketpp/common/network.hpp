@@ -4,14 +4,6 @@
 
 #pragma once
 
-// For ntohs and htons
-#if defined(_WIN32)
-    #include <winsock2.h>
-#else
-    //#include <arpa/inet.h>
-    #include <netinet/in.h>
-#endif
-
 #include <websocketpp/common/stdint.hpp>
 
 namespace websocketpp {
@@ -22,6 +14,35 @@ inline bool is_little_endian() {
     short int val = 0x1;
     char *ptr = reinterpret_cast<char *>(&val);
     return (ptr[0] == 1);
+}
+
+/// Convert a 16-bit value from host to network byte order without socket APIs.
+inline uint16_t _htons(uint16_t src) {
+    if (!is_little_endian()) {
+        return src;
+    }
+    return static_cast<uint16_t>((src >> 8) | (src << 8));
+}
+
+/// Convert a 16-bit value from network to host byte order.
+inline uint16_t _ntohs(uint16_t src) {
+    return _htons(src);
+}
+
+/// Convert a 32-bit value from host to network byte order without socket APIs.
+inline uint32_t _htonl(uint32_t src) {
+    if (!is_little_endian()) {
+        return src;
+    }
+    return ((src & 0x000000ffU) << 24) |
+           ((src & 0x0000ff00U) << 8) |
+           ((src & 0x00ff0000U) >> 8) |
+           ((src & 0xff000000U) >> 24);
+}
+
+/// Convert a 32-bit value from network to host byte order.
+inline uint32_t _ntohl(uint32_t src) {
+    return _htonl(src);
 }
 
 #define TYP_INIT 0

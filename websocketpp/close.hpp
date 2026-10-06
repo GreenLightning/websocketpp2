@@ -283,7 +283,7 @@ inline status::value extract_code(std::string const & payload, lib::error_code
     val.c[0] = payload[0];
     val.c[1] = payload[1];
 
-    status::value code(ntohs(val.i));
+    status::value code(lib::net::_ntohs(val.i));
 
     if (status::invalid(code)) {
         ec = make_error_code(error::invalid_close_code);
