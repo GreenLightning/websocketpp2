@@ -117,6 +117,10 @@ private:
         if (disconnected) return;
         disconnected = true;
         websocketpp::lib::error_code ignored;
+        // Explicitly shut down TCP before closing the socket handles so the
+        // peer can observe an orderly end of the tunnel.
+        peer_.shutdown(tcp::socket::shutdown_both, ignored);
+        upstream_.shutdown(tcp::socket::shutdown_both, ignored);
         peer_.close(ignored);
         upstream_.close(ignored);
         if (on_disconnect) on_disconnect();
@@ -233,7 +237,7 @@ BOOST_AUTO_TEST_CASE( authenticated_connect_proxy_echo ) {
     BOOST_CHECK_EQUAL(failures, 0);
     BOOST_CHECK_EQUAL(server_messages, 1);
     BOOST_CHECK_EQUAL(client_messages, 1);
-    BOOST_CHECK(!con->get_ec());
+    BOOST_CHECK_EQUAL(con->get_ec(), websocketpp::lib::error_code());
     BOOST_CHECK_EQUAL(con->get_remote_close_code(), websocketpp::close::status::normal);
 }
 

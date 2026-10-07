@@ -77,15 +77,6 @@ using websocketpp::lib::placeholders::_1;
 using websocketpp::lib::placeholders::_2;
 using websocketpp::lib::bind;
 
-template <typename T>
-void close_after_timeout(T & e, websocketpp::connection_hdl hdl, long timeout) {
-    std::this_thread::sleep_for(std::chrono::seconds(timeout));
-
-    websocketpp::lib::error_code ec;
-    e.close(hdl,websocketpp::close::status::normal,"",ec);
-    BOOST_CHECK(!ec);
-}
-
 void run_server(server * s, int port, bool log = false) {
     if (log) {
         s->set_access_channels(websocketpp::log::alevel::all);
@@ -154,13 +145,17 @@ void run_time_limited_client(client & c, std::string uri, long timeout,
     BOOST_CHECK( !ec );
     c.connect(con);
 
-    websocketpp::lib::thread tthread(websocketpp::lib::bind(
-        &close_after_timeout<client>,
-        websocketpp::lib::ref(c),
-        con->get_handle(),
-        timeout
-    ));
-    tthread.detach();
+    // Keep the timeout on the client's event loop. A detached thread can
+    // outlive c when connecting fails and then access a destroyed endpoint.
+    client::timer_ptr timer = c.set_timer(timeout * 1000,
+        [con](websocketpp::lib::error_code const & ec) {
+            BOOST_REQUIRE(!ec);
+            if (con->get_state() == websocketpp::session::state::open) {
+                websocketpp::lib::error_code close_ec;
+                con->close(websocketpp::close::status::normal, "", close_ec);
+                BOOST_CHECK_EQUAL(close_ec, websocketpp::lib::error_code());
+            }
+        });
 
     c.run();
 }
