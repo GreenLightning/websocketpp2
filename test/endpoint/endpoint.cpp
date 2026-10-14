@@ -35,8 +35,8 @@ BOOST_AUTO_TEST_CASE( initialize_server_asio ) {
 #endif
 
 BOOST_AUTO_TEST_CASE( initialize_server_asio_external ) {
-    websocketpp::server<websocketpp::config::asio> s;
     websocketpp::lib::asio::io_context ios;
+    websocketpp::server<websocketpp::config::asio> s;
     s.init_asio(&ios);
     BOOST_CHECK_EQUAL(&s.get_io_context(), &ios);
     BOOST_CHECK_EQUAL(&s.get_io_service(), &ios);
